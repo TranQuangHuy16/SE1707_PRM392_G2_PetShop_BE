@@ -1,11 +1,105 @@
+﻿using Microsoft.EntityFrameworkCore;
+using PetShop.Repositories.DBContext;
+using Microsoft.IdentityModel.Tokens;
+using PetShop.Repositories.Interfaces;
+using PetShop.Services.Interfaces;
+using PetShop.Services.Services;
+using PetShop.Repositories.Repositories;
+using System.Text;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+            ClockSkew = TimeSpan.Zero // Loại bỏ độ trễ thời gian (nếu có)
+        };
+    });
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "Dorfo API", Version = "v1" });
+
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,   // ✅ dùng Http
+        Scheme = "bearer",                                         // ✅ phải có bearer
+        BearerFormat = "JWT",                                      // ✅ format JWT
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Enter JWT token with **Bearer** prefix. Example: `Bearer {your token}`"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"   // phải trùng với tên ở trên
+                }
+            },
+            new string[] {}
+        }
+    });
+
+    c.MapType<TimeSpan>(() => new Microsoft.OpenApi.Models.OpenApiSchema
+    {
+        Type = "string",
+        Example = new Microsoft.OpenApi.Any.OpenApiString("08:00:00"),
+        Format = "time"
+    });
+
+    c.MapType<TimeSpan?>(() => new Microsoft.OpenApi.Models.OpenApiSchema
+    {
+        Type = "string",
+        Example = new Microsoft.OpenApi.Any.OpenApiString("08:00:00"),
+        Format = "time"
+    });
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy.AllowAnyOrigin()   // Cho phép tất cả domain
+                  .AllowAnyMethod()   // Cho phép tất cả method (GET, POST, PUT, DELETE...)
+                  .AllowAnyHeader();  // Cho phép tất cả header
+        });
+});
+
+
+// Đọc connection string từ appsettings.json
+var connectionString = builder.Configuration.GetConnectionString("PetShop");
+
+// Đăng ký DbContext
+builder.Services.AddDbContext<PetShopDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+//Repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+//Services
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
@@ -17,7 +111,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

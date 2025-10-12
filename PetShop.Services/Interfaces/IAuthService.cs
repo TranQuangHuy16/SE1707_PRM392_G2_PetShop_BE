@@ -1,0 +1,17 @@
+﻿using PetShop.Repositories.Models;
+using PetShop.Services.DTOs.Requests;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PetShop.Services.Interfaces
+{
+    public interface IAuthService
+    {
+        Task<User> Register(RegisterRequest registerRequest);
+        Task<string> Login(LoginRequest loginRequest);
+        Task<string> LoginWithGoogleAsync(GoogleLoginRequest dto);
+    }
+}
