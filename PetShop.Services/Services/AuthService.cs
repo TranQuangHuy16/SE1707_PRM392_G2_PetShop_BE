@@ -4,7 +4,9 @@ using Microsoft.IdentityModel.Tokens;
 using PetShop.Repositories.Basic;
 using PetShop.Repositories.Interfaces;
 using PetShop.Repositories.Models;
+using PetShop.Repositories.Models.Enums;
 using PetShop.Services.DTOs.Requests;
+using PetShop.Services.DTOs.Responses;
 using PetShop.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -28,7 +30,7 @@ namespace PetShop.Services.Services
             _config = configuration;
         }
 
-        public async Task<User> Register(RegisterRequest registerRequest)
+        public async Task<UserResponse> Register(RegisterRequest registerRequest)
         {
             // Kiểm tra trùng phone
             if (!string.IsNullOrEmpty(registerRequest.Phone))
@@ -59,15 +61,25 @@ namespace PetShop.Services.Services
             {
                 Username = registerRequest.Username,
                 Password = registerRequest.Password,
+                FullName = registerRequest.FullName,
                 Email = registerRequest.Email,
                 Phone = registerRequest.Phone,
-                CreateAt = DateTime.Now,
-                Role = 1
+                CreatedAt = DateTime.Now,
+                Role = UserRoleEnum.Customer,
             };
 
             var createdUser = await _userRepository.CreateUserAsync(newUser);
 
-            return createdUser;
+            var createdUserResponse = new UserResponse
+            {
+                Username = createdUser.Username,
+                Password = createdUser.Password,
+                FullName = createdUser.FullName,
+                Email = createdUser.Email,
+                Phone = createdUser.Phone,
+            };
+
+            return createdUserResponse;
         }
 
         public async Task<string> Login(LoginRequest loginRequest)
@@ -90,6 +102,7 @@ namespace PetShop.Services.Services
 
             // 2. Lấy email
             var email = payload.Email;
+            var name = payload.Name;
             var user = await _userRepository.GetUserByEmailAsync(email);
 
             if (user != null)
@@ -102,9 +115,10 @@ namespace PetShop.Services.Services
                 {
                     Username = email,
                     Password = Guid.NewGuid().ToString("N").Substring(0, 12),
+                    FullName = name,
                     Email = email,
-                    CreateAt = DateTime.Now,
-                    Role = 1
+                    CreatedAt = DateTime.Now,
+                    Role = UserRoleEnum.Customer,
                 };
 
                 user = await _userRepository.CreateUserAsync(user);
@@ -123,7 +137,7 @@ namespace PetShop.Services.Services
             // Các claim (thông tin bạn muốn nhúng trong token)
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
             new Claim(JwtRegisteredClaimNames.Sub, user.Username),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim("role", user.Role.ToString()),
