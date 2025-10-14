@@ -15,5 +15,6 @@ namespace PetShop.Services.Interfaces
         Task<string> Login(LoginRequest loginRequest);
         Task<string> LoginWithGoogleAsync(GoogleLoginRequest dto);
         Task LogoutAsync(string token);
+        bool IsTokenBlacklisted(string token)
     }
 }
