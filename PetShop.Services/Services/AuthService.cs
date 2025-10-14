@@ -24,6 +24,7 @@ namespace PetShop.Services.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _config;
+        private readonly HashSet<string> _blacklistedTokens = new HashSet<string>();
         public AuthService(IUserRepository userRepository, IConfiguration configuration)
         {
             _userRepository = userRepository;
@@ -105,11 +106,8 @@ namespace PetShop.Services.Services
             var name = payload.Name;
             var user = await _userRepository.GetUserByEmailAsync(email);
 
-            if (user != null)
-            {
-                throw new Exception($"Email {email} is already in use.");
-            }
-            else
+
+            if (user == null)
             {
                 user = new User
                 {
@@ -128,6 +126,13 @@ namespace PetShop.Services.Services
             return token;
 
         }
+
+        public Task LogoutAsync(string token)
+        {
+            _blacklistedTokens.Add(token);
+            return Task.CompletedTask;
+        }
+
 
         private string GenerateJwtToken(User user)
         {

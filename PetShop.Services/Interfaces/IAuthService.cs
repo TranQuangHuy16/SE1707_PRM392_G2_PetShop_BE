@@ -14,5 +14,6 @@ namespace PetShop.Services.Interfaces
         Task<UserResponse> Register(RegisterRequest registerRequest);
         Task<string> Login(LoginRequest loginRequest);
         Task<string> LoginWithGoogleAsync(GoogleLoginRequest dto);
+        Task LogoutAsync(string token);
     }
 }
