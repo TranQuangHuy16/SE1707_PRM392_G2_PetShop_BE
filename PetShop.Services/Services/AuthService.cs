@@ -128,6 +128,12 @@ namespace PetShop.Services.Services
 
         }
 
+        public bool IsTokenBlacklisted(string token)
+        {
+            return _blacklistedTokens.Contains(token);
+        }
+
+
         public Task LogoutAsync(string token)
         {
             _blacklistedTokens.Add(token);

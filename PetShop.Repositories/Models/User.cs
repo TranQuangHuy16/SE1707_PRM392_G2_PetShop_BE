@@ -15,6 +15,7 @@ namespace PetShop.Repositories.Models
         public string Email { get; set; }
         public string Password { get; set; }
         public string? Phone { get; set; }
+        public string? ImgUrl { get; set; }
         public UserRoleEnum Role { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }

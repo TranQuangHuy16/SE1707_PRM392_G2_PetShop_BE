@@ -6,6 +6,7 @@ using PetShop.Services.Interfaces;
 using PetShop.Services.Services;
 using PetShop.Repositories.Repositories;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +27,24 @@ builder.Services.AddAuthentication("Bearer")
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
             ClockSkew = TimeSpan.Zero // Loại bỏ độ trễ thời gian (nếu có)
         };
+        // 🔥 Thêm phần kiểm tra blacklist
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var authService = context.HttpContext.RequestServices.GetRequiredService<IAuthService>();
+
+                if (authService.IsTokenBlacklisted(token))
+                {
+                    context.Fail("Token is blacklisted");
+                }
+
+                return Task.CompletedTask;
+            }
+        };
     });
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
