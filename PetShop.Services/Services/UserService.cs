@@ -28,6 +28,7 @@ namespace PetShop.Services.Services
             var userResponse = new UserResponse
             {
                 Username = user.Username,
+                FullName = user.FullName,
                 Password = user.Password,
                 Email = user.Email,
                 Phone = user.Phone

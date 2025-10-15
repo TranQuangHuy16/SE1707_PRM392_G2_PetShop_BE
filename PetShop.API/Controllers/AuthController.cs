@@ -78,7 +78,7 @@ namespace PetShop.API.Controllers
         {
             // return 200 even if email doesn't exist to avoid leaking user list
             var ok = await _otpService.RequestOtpAsync(dto.Email);
-            return Ok(new { success = true, message = "If the email exists, an OTP has been sent." });
+            return Ok(true);
         }
 
         // 2. Verify OTP
@@ -87,19 +87,18 @@ namespace PetShop.API.Controllers
         {
             var valid = await _otpService.VerifyOtpAsync(dto.Email, dto.Code);
             if (!valid) return BadRequest(new { success = false, message = "Invalid or expired OTP." });
-            return Ok(new { success = true, message = "OTP valid." });
+            return Ok(true);
         }
 
         // 3. Reset password
         [HttpPost("forgot-password/reset")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.NewPassword) || dto.NewPassword.Length < 6)
-                return BadRequest(new { success = false, message = "Password too short (min 6 chars)." });
+            var user = await _otpService.ResetPasswordAsync(dto.Email, dto.NewPassword);
+            if (user == null)
+                return BadRequest(new { success = false, message = "Không tìm thấy người dùng hoặc OTP không hợp lệ/hết hạn." });
 
-            var ok = await _otpService.ResetPasswordAsync(dto.Email, dto.Code, dto.NewPassword);
-            if (!ok) return BadRequest(new { success = false, message = "Invalid OTP or email." });
-            return Ok(new { success = true, message = "Password reset successfully." });
+            return Ok(user);
         }
     }
 }

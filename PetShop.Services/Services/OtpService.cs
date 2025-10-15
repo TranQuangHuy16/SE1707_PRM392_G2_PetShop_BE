@@ -1,5 +1,6 @@
 ﻿using PetShop.Repositories.Interfaces;
 using PetShop.Repositories.Models;
+using PetShop.Services.DTOs.Responses;
 using PetShop.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -38,8 +39,8 @@ namespace PetShop.Services.Services
             var user = await _userRepo.GetUserByEmailAsync(email);
             if (user == null) return false; // don't reveal to client whether email exists in detail in production
 
-            // delete old expired or used
-            await _otpRepo.DeleteExpiredAsync(DateTime.UtcNow);
+            //// delete old expired or used
+            //await _otpRepo.DeleteExpiredAsync(DateTime.UtcNow);
 
             // generate otp
             var code = GenerateNumericCode(_otpLength);
@@ -69,25 +70,30 @@ namespace PetShop.Services.Services
             var found = await _otpRepo.GetValidOtpByCodeAsync(user.UserId, code);
             if (found == null) return false;
 
+            found.IsUsed = true;
+            _otpRepo.UpdateAsync(found);
+
             return true;
         }
 
-        public async Task<bool> ResetPasswordAsync(string email, string code, string newPassword)
+        public async Task<UserResponse> ResetPasswordAsync(string email, string newPassword)
         {
             var user = await _userRepo.GetUserByEmailAsync(email);
-            if (user == null) return false;
-
-            var found = await _otpRepo.GetValidOtpByCodeAsync(user.UserId, code);
-            if (found == null) return false;
-
-            found.IsUsed = true;
-            await _otpRepo.UpdateAsync(found);
+            if (user == null) return null;
 
             user.Password = newPassword;
 
             await _userRepo.UpdateAsync(user);
 
-            return true;
+            var userResponse = new UserResponse
+            {
+                Username = user.Username,
+                Password = user.Password,
+                Email = user.Email,
+                Phone = user.Phone
+            };
+
+            return userResponse;
         }
     }
 }

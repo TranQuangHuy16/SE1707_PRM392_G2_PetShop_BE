@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PetShop.Services.DTOs.Responses;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,6 @@ namespace PetShop.Services.Interfaces
     {
         Task<bool> RequestOtpAsync(string email);
         Task<bool> VerifyOtpAsync(string email, string code);
-        Task<bool> ResetPasswordAsync(string email, string code, string newPassword);
+        Task<UserResponse> ResetPasswordAsync(string email, string newPassword);
     }
 }
