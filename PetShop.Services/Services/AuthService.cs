@@ -1,6 +1,7 @@
 ﻿using Google.Apis.Auth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Crypto.Generators;
 using PetShop.Repositories.Basic;
 using PetShop.Repositories.Interfaces;
 using PetShop.Repositories.Models;
@@ -25,10 +26,10 @@ namespace PetShop.Services.Services
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _config;
         private readonly HashSet<string> _blacklistedTokens = new HashSet<string>();
-        public AuthService(IUserRepository userRepository, IConfiguration configuration)
+        public AuthService(IUserRepository userRepository, IConfiguration config)
         {
             _userRepository = userRepository;
-            _config = configuration;
+            _config = config;
         }
 
         public async Task<UserResponse> Register(RegisterRequest registerRequest)
@@ -164,5 +165,6 @@ namespace PetShop.Services.Services
             // Trả token dạng string
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 }

@@ -283,6 +283,37 @@ namespace PetShop.Repositories.Migrations
                     b.ToTable("OrderDetails");
                 });
 
+            modelBuilder.Entity("PetShop.Repositories.Models.Otp", b =>
+                {
+                    b.Property<int>("OtpId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OtpId"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("OtpId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Otps");
+                });
+
             modelBuilder.Entity("PetShop.Repositories.Models.Payment", b =>
                 {
                     b.Property<int>("PaymentId")
@@ -615,6 +646,17 @@ namespace PetShop.Repositories.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("PetShop.Repositories.Models.Otp", b =>
+                {
+                    b.HasOne("PetShop.Repositories.Models.User", "User")
+                        .WithMany("Otps")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("PetShop.Repositories.Models.Payment", b =>
                 {
                     b.HasOne("PetShop.Repositories.Models.Order", null)
@@ -708,6 +750,8 @@ namespace PetShop.Repositories.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("Otps");
                 });
 
             modelBuilder.Entity("PetShop.Repositories.Models.UserAddress", b =>

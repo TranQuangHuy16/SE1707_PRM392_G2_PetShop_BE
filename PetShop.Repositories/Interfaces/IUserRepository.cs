@@ -15,5 +15,6 @@ namespace PetShop.Repositories.Interfaces
         Task<User> GetUserByPhoneAsync(string phone);
         Task<User> GetUserByUsernameAsync(string username);
         Task<User> GetUserByIdAsync(int id);
+        Task<int> UpdateAsync(User user);
     }
 }

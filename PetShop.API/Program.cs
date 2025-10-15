@@ -96,10 +96,15 @@ builder.Services.AddDbContext<PetShopDbContext>(options =>
 
 //Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IOtpRepository, OtpRepository>();
+
 
 //Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IOtpService, OtpService>();
+
 
 var app = builder.Build();
 

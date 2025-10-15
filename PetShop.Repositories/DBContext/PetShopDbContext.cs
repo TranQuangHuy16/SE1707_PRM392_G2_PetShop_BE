@@ -23,7 +23,7 @@ namespace PetShop.Repositories.DBContext
         public DbSet<ChatRoom> ChatRooms { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-
+        public DbSet<Otp> Otps { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -113,6 +113,16 @@ namespace PetShop.Repositories.DBContext
                 .WithMany()
                 .HasForeignKey(n => n.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // ===================== OTP - USER =====================
+            modelBuilder.Entity<Otp>()
+                .HasKey(o => o.OtpId);
+
+            modelBuilder.Entity<Otp>()
+                .HasOne(o => o.User)
+                .WithMany(u => u.Otps) // nếu User có collection Otp thì chuyển thành .WithMany(u => u.Otps)
+                .HasForeignKey(o => o.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

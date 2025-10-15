@@ -168,6 +168,29 @@ namespace PetShop.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Otps",
+                columns: table => new
+                {
+                    OtpId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsUsed = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Otps", x => x.OtpId);
+                    table.ForeignKey(
+                        name: "FK_Otps_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserAddresses",
                 columns: table => new
                 {
@@ -469,6 +492,11 @@ namespace PetShop.Repositories.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Otps_UserId",
+                table: "Otps",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Payments_OrderId",
                 table: "Payments",
                 column: "OrderId");
@@ -525,6 +553,9 @@ namespace PetShop.Repositories.Migrations
 
             migrationBuilder.DropTable(
                 name: "OrderDetails");
+
+            migrationBuilder.DropTable(
+                name: "Otps");
 
             migrationBuilder.DropTable(
                 name: "Payments");

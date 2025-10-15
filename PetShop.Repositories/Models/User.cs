@@ -27,5 +27,6 @@ namespace PetShop.Repositories.Models
         public ICollection<ChatRoom> CustomerChatRooms { get; set; }
         public ICollection<ChatRoom> AdminChatRooms { get; set; }
         public ICollection<Message> Messages { get; set; }
+        public ICollection<Otp> Otps { get; set; } = new List<Otp>();
     }
 }
