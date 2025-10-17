@@ -31,7 +31,8 @@ namespace PetShop.Services.Services
                 FullName = user.FullName,
                 Password = user.Password,
                 Email = user.Email,
-                Phone = user.Phone
+                Phone = user.Phone,
+                ImgUrl = user.ImgUrl,
             };
 
             return userResponse;
