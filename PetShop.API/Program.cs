@@ -46,7 +46,13 @@ builder.Services.AddAuthentication("Bearer")
     });
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -115,6 +121,7 @@ builder.Services.AddDbContext<PetShopDbContext>(options =>
 //Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOtpRepository, OtpRepository>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
 
 
 //Services
@@ -122,6 +129,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
+builder.Services.AddScoped<IChatService, ChatService>();
 
 
 var app = builder.Build();

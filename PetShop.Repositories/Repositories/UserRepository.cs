@@ -38,11 +38,29 @@ namespace PetShop.Repositories.Repositories
 
         public async Task<User> CreateUserAsync(User newUser)
         {
+            // 1️⃣ Thêm user trước
             await _context.Users.AddAsync(newUser);
+            await _context.SaveChangesAsync(); // Bắt buộc gọi ở đây để có UserId thật
+
+            // 2️⃣ Lấy admin ID
+            var adminId = await _context.Users
+                .Where(u => u.Role == Models.Enums.UserRoleEnum.Admin)
+                .Select(u => u.UserId)
+                .FirstOrDefaultAsync();
+
+            // 3️⃣ Tạo ChatRoom
+            var chatRoom = new ChatRoom
+            {
+                AdminId = adminId,
+                CustomerId = newUser.UserId // Lúc này đã có giá trị thật
+            };
+
+            await _context.ChatRooms.AddAsync(chatRoom);
             await _context.SaveChangesAsync();
 
             return newUser;
         }
+
 
         public async Task<User> GetUserByIdAsync(int id)
         {

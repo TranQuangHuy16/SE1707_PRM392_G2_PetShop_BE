@@ -81,6 +81,8 @@ namespace PetShop.Services.Services
                 Phone = createdUser.Phone,
             };
 
+
+
             return createdUserResponse;
         }
 
@@ -149,8 +151,7 @@ namespace PetShop.Services.Services
             // Các claim (thông tin bạn muốn nhúng trong token)
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-            new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+            new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim("role", user.Role.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())

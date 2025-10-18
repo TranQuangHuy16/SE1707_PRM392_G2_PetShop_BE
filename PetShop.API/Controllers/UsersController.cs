@@ -27,5 +27,14 @@ namespace PetShop.API.Controllers
 
             return Ok(user);
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+
+            var user = await _userService.GetById(id);
+
+            return Ok(user);
+        }
     }
 }
