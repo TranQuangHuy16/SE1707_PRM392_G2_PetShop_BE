@@ -1,6 +1,8 @@
-﻿using Google.Apis.Auth;
+﻿using Azure.Core;
+using Google.Apis.Auth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Crypto.Generators;
 using PetShop.Repositories.Basic;
 using PetShop.Repositories.Interfaces;
@@ -25,11 +27,13 @@ namespace PetShop.Services.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _config;
+        private readonly HttpClient _httpClient;
         private readonly HashSet<string> _blacklistedTokens = new HashSet<string>();
-        public AuthService(IUserRepository userRepository, IConfiguration config)
+        public AuthService(IUserRepository userRepository, IConfiguration config, HttpClient httpClient)
         {
             _userRepository = userRepository;
             _config = config;
+            _httpClient = httpClient;
         }
 
         public async Task<UserResponse> Register(RegisterRequest registerRequest)
@@ -130,6 +134,55 @@ namespace PetShop.Services.Services
 
         }
 
+        public async Task<string> LoginWithFacebookAsync(LoginFacebookRequest request)
+        {
+            // 1. Lấy App Secret từ config (bảo mật)
+            var appSecret = _config["Facebook:AppSecret"];
+
+            // 2. Tạo AppSecret Proof (bảo mật tăng cường)
+            var appSecretProof = GenerateAppSecretProof(request.AccessToken, appSecret);
+
+            // 3. Gọi API "debug_token" của Facebook để xác thực token
+            // Chúng ta cũng có thể gọi /me, nhưng debug_token an toàn hơn
+            var debugUrl = $"https://graph.facebook.com/debug_token?input_token={request.AccessToken}&access_token={_config["Facebook:AppId"]}|{appSecret}";
+
+            // HOẶC cách đơn giản hơn là gọi thẳng /me
+            var fields = "id,name,email,picture.type(large)";
+            var meUrl = $"https://graph.facebook.com/me?fields={fields}&access_token={request.AccessToken}";
+
+            var response = await _httpClient.GetAsync(meUrl);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                // Token không hợp lệ hoặc có lỗi
+                return null;
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            var fbUser = JsonConvert.DeserializeObject<FacebookUserResponse>(content);
+
+            var user = await _userRepository.GetUserByEmailAsync(fbUser.Email);
+
+            if (user == null)
+            {
+                user = new User
+                {
+                    Username = fbUser.Email,
+                    Password = Guid.NewGuid().ToString("N").Substring(0, 12),
+                    FullName = fbUser.Name,
+                    Email = fbUser.Email,
+                    CreatedAt = DateTime.Now,
+                    Role = UserRoleEnum.Customer,
+                };
+
+                user = await _userRepository.CreateUserAsync(user);
+            }
+
+            var token = GenerateJwtToken(user);
+            return token;
+        }
+
+
         public bool IsTokenBlacklisted(string token)
         {
             return _blacklistedTokens.Contains(token);
@@ -141,6 +194,7 @@ namespace PetShop.Services.Services
             _blacklistedTokens.Add(token);
             return Task.CompletedTask;
         }
+
 
 
         private string GenerateJwtToken(User user)
@@ -173,5 +227,15 @@ namespace PetShop.Services.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+
+        // (Helper)
+        private string GenerateAppSecretProof(string accessToken, string appSecret)
+        {
+            using (var hmac = new System.Security.Cryptography.HMACSHA256(System.Text.Encoding.UTF8.GetBytes(appSecret)))
+            {
+                var hash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(accessToken));
+                return BitConverter.ToString(hash).Replace("-", "").ToLower();
+            }
+        }
     }
 }

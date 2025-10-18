@@ -118,6 +118,8 @@ var connectionString = builder.Configuration.GetConnectionString("PetShop");
 builder.Services.AddDbContext<PetShopDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+builder.Services.AddHttpClient();
+
 //Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOtpRepository, OtpRepository>();

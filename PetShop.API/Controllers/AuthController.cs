@@ -63,6 +63,20 @@ namespace PetShop.API.Controllers
             }
         }
 
+        [HttpPost("login-by-facebook")]
+        public async Task<IActionResult> LoginByFacebook([FromBody] LoginFacebookRequest request)
+        {
+            try
+            {
+                var token = await _authService.LoginWithFacebookAsync(request);
+                return Ok(new { accessToken = token });
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+        }
+
         [HttpPost("logout")]
         [Authorize]
         public async Task<IActionResult> Logout()
