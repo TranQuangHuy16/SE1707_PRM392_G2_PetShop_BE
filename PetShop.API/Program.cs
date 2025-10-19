@@ -124,6 +124,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOtpRepository, OtpRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
 
 
 //Services
@@ -132,6 +133,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IMapboxService, MapboxService>();
+builder.Services.AddScoped<IUserAddressService, UserAddressService>();
 
 
 var app = builder.Build();
