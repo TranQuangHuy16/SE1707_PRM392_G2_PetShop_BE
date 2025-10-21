@@ -13,5 +13,7 @@ namespace PetShop.Services.DTOs.Requests
         [StringLength(100)]
         public string CategoryName { get; set; }
         public bool IsActive { get; set; } = true;
+
+        public string? ImageUrl { get; set; }
     }
 }

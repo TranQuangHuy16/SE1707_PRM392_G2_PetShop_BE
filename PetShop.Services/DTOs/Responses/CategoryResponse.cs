@@ -11,5 +11,6 @@ namespace PetShop.Services.DTOs.Responses
         public int CategoryId { get; set; }
         public string CategoryName { get; set; }
         public bool IsActive { get; set; }
+        public string? ImageUrl { get; set; }
     }
 }
