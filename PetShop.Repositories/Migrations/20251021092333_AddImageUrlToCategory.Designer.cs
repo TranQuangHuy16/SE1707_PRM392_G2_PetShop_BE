@@ -12,8 +12,8 @@ using PetShop.Repositories.DBContext;
 namespace PetShop.Repositories.Migrations
 {
     [DbContext(typeof(PetShopDbContext))]
-    [Migration("20251015014652_AddImgUrl")]
-    partial class AddImgUrl
+    [Migration("20251021092333_AddImageUrlToCategory")]
+    partial class AddImageUrlToCategory
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -95,6 +95,9 @@ namespace PetShop.Repositories.Migrations
 
                     b.Property<string>("CategoryName")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")

@@ -7,6 +7,7 @@ using PetShop.Services.Services;
 using PetShop.Repositories.Repositories;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using PetShop.Services.Mapper;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -126,6 +127,8 @@ builder.Services.AddScoped<IOtpRepository, OtpRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
 
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 //Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -135,6 +138,12 @@ builder.Services.AddScoped<IOtpService, OtpService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IMapboxService, MapboxService>();
 builder.Services.AddScoped<IUserAddressService, UserAddressService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+
+//mapper
+builder.Services.AddAutoMapper(typeof(ProductMapper));
 
 
 var app = builder.Build();
@@ -146,7 +155,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 
 
