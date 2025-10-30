@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PetShop.Repositories.DBContext;
 
@@ -11,9 +12,11 @@ using PetShop.Repositories.DBContext;
 namespace PetShop.Repositories.Migrations
 {
     [DbContext(typeof(PetShopDbContext))]
-    partial class PetShopDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251029152549_FixCartItemRelationships")]
+    partial class FixCartItemRelationships
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -253,10 +256,13 @@ namespace PetShop.Repositories.Migrations
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
+                    b.Property<int>("OrderId1")
+                        .HasColumnType("int");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ProductId1")
+                    b.Property<int>("ProductId1")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
@@ -268,6 +274,8 @@ namespace PetShop.Repositories.Migrations
                     b.HasKey("OrderDetailId");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("OrderId1");
 
                     b.HasIndex("ProductId");
 
@@ -605,21 +613,29 @@ namespace PetShop.Repositories.Migrations
 
             modelBuilder.Entity("PetShop.Repositories.Models.OrderDetail", b =>
                 {
-                    b.HasOne("PetShop.Repositories.Models.Order", "Order")
-                        .WithMany("OrderDetails")
+                    b.HasOne("PetShop.Repositories.Models.Order", null)
+                        .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("PetShop.Repositories.Models.Product", "Product")
+                    b.HasOne("PetShop.Repositories.Models.Order", "Order")
+                        .WithMany("OrderDetails")
+                        .HasForeignKey("OrderId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PetShop.Repositories.Models.Product", null)
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("PetShop.Repositories.Models.Product", null)
+                    b.HasOne("PetShop.Repositories.Models.Product", "Product")
                         .WithMany("OrderDetails")
-                        .HasForeignKey("ProductId1");
+                        .HasForeignKey("ProductId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Order");
 

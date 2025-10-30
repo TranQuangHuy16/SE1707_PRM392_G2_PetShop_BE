@@ -56,26 +56,26 @@ namespace PetShop.Repositories.DBContext
 
             // ===================== CART - CART ITEM =====================
             modelBuilder.Entity<CartItem>()
-                .HasOne<Cart>()
-                .WithMany()
+                .HasOne(ci => ci.Cart)
+                .WithMany(c => c.CartItems)
                 .HasForeignKey(ci => ci.CartId)
-                .OnDelete(DeleteBehavior.Restrict); // ⚠️ Đổi thành Restrict
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<CartItem>()
-                .HasOne<Product>()
+                .HasOne(ci => ci.Product)
                 .WithMany()
                 .HasForeignKey(ci => ci.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // ===================== ORDER - ORDER DETAIL =====================
             modelBuilder.Entity<OrderDetail>()
-                .HasOne<Order>()
-                .WithMany()
+                .HasOne(od => od.Order)
+                .WithMany(o => o.OrderDetails)
                 .HasForeignKey(od => od.OrderId)
-                .OnDelete(DeleteBehavior.Restrict); // ⚠️ đổi Cascade -> Restrict
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<OrderDetail>()
-                .HasOne<Product>()
+                .HasOne(od => od.Product)
                 .WithMany()
                 .HasForeignKey(od => od.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
