@@ -14,5 +14,6 @@ namespace PetShop.Services.Interfaces
         Task<UserAddressResponse> CreateAsync(UserAddressRequest request);
         Task<UserAddressResponse> UpdateAsync(int id, UserAddressRequest request);
         Task<UserAddressResponse> GetDefaultByUserId(int id);
+        Task<IEnumerable<UserAddressResponse>> GetByUserIdAsync(int userId);
     }
 }

@@ -61,6 +61,13 @@ namespace PetShop.Services.Services
             var defaultAddress = await _userAddressRepository.GetDefaultByUserId(userId);
             return defaultAddress == null ? null : MapToResponse(defaultAddress);
         }
+
+        public async Task<IEnumerable<UserAddressResponse>> GetByUserIdAsync(int userId)
+        {
+            var addresses = await _userAddressRepository.GetByUserIdAsync(userId);
+            return addresses.Select(MapToResponse).ToList();
+        }
+
         // Update UserAddress
         public async Task<UserAddressResponse> UpdateAsync(int id, UserAddressRequest request)
         {

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PetShop.Repositories.DBContext;
 using PetShop.Repositories.Interfaces;
 using PetShop.Repositories.Models;
+using PetShop.Repositories.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,13 +20,19 @@ namespace PetShop.Repositories.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Payment>> GetAllPaymentsAsync()
+        public async Task<IEnumerable<Payment>> GetAllPaymentsAsync(PaymentStatusEnum? status = null)
         {
-            return await _context.Payments
+            var query = _context.Payments
                 .Include(p => p.Order)
                     .ThenInclude(o => o.User)
-                .Where(p => p.IsActive)
-                .ToListAsync();
+                .Where(p => p.IsActive);
+
+            if (status.HasValue)
+            {
+                query = query.Where(p => p.PaymentStatus == status.Value);
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<Payment?> GetPaymentByIdAsync(int paymentId)
@@ -44,13 +51,19 @@ namespace PetShop.Repositories.Repositories
                 .FirstOrDefaultAsync(p => p.OrderId == orderId && p.IsActive);
         }
 
-        public async Task<IEnumerable<Payment>> GetPaymentsByUserIdAsync(int userId)
+        public async Task<IEnumerable<Payment>> GetPaymentsByUserIdAsync(int userId, PaymentStatusEnum? status = null)
         {
-            return await _context.Payments
+            var query = _context.Payments
                 .Include(p => p.Order)
                     .ThenInclude(o => o.User)
-                .Where(p => p.Order.UserId == userId && p.IsActive)
-                .ToListAsync();
+                .Where(p => p.Order.UserId == userId && p.IsActive);
+
+            if (status.HasValue)
+            {
+                query = query.Where(p => p.PaymentStatus == status.Value);
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<Payment> CreatePaymentAsync(Payment payment)
