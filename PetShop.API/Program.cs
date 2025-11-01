@@ -117,14 +117,9 @@ builder.Services.AddCors(options =>
 
 // Đăng ký DbContext
 builder.Services.AddDbContext<PetShopDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("PetShop"),
-        sqlOptions => sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(10),
-            errorNumbersToAdd: null
-        )
-    )
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PetShop"))
 );
+
 
 
 builder.Services.AddHttpClient();

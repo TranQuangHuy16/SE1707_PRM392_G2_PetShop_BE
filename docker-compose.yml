@@ -1,16 +1,18 @@
 version: '3.9'
 
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: petshop-sql
+  postgres:
+    image: postgres:16
+    container_name: petshop-postgres
+    restart: always
     environment:
-      SA_PASSWORD: "YourStrong!Pass123"
-      ACCEPT_EULA: "Y"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: YourStrong!Pass123
+      POSTGRES_DB: petshopdb
     ports:
-      - "1433:1433"
+      - "5432:5432"
     volumes:
-      - sql_data:/var/opt/mssql
+      - postgres_data:/var/lib/postgresql/data
 
   petshop-api:
     build:
@@ -18,7 +20,7 @@ services:
       dockerfile: PetShop.API/Dockerfile
     container_name: petshop-api
     depends_on:
-      - sqlserver
+      - postgres
     ports:
       - "8080:8080"
     env_file:
@@ -39,4 +41,4 @@ services:
       - Mapbox__AccessToken=${MAPBOX_TOKEN}
 
 volumes:
-  sql_data:
+  postgres_data:

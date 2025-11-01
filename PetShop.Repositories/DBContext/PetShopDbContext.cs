@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PetShop.Repositories.Models;
 
 namespace PetShop.Repositories.DBContext
@@ -10,7 +11,7 @@ namespace PetShop.Repositories.DBContext
         public PetShopDbContext(DbContextOptions<PetShopDbContext> options)
             : base(options) { }
 
-        // DbSets
+        // ===================== DB SETS =====================
         public DbSet<User> Users { get; set; }
         public DbSet<UserAddress> UserAddresses { get; set; }
         public DbSet<Category> Categories { get; set; }
@@ -24,10 +25,36 @@ namespace PetShop.Repositories.DBContext
         public DbSet<Message> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Otp> Otps { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+
+            // 🔹 Thêm cấu hình DateTime UTC fix cho PostgreSQL
+            var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
+                v => v.Kind == DateTimeKind.Utc ? v : v.ToUniversalTime(),
+                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+            );
+
+            var nullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
+                v => v.HasValue ? (v.Value.Kind == DateTimeKind.Utc ? v.Value : v.Value.ToUniversalTime()) : v,
+                v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v
+            );
+
+            // Áp dụng converter này cho tất cả property kiểu DateTime hoặc DateTime?
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime))
+                        property.SetValueConverter(dateTimeConverter);
+
+                    if (property.ClrType == typeof(DateTime?))
+                        property.SetValueConverter(nullableDateTimeConverter);
+                }
+            }
             // ===================== USER =====================
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Username)
@@ -45,7 +72,7 @@ namespace PetShop.Repositories.DBContext
                 .HasOne(a => a.User)
                 .WithMany(u => u.Addresses)
                 .HasForeignKey(a => a.UserId)
-                .OnDelete(DeleteBehavior.Cascade); // OK: User xoá → Address xoá
+                .OnDelete(DeleteBehavior.Cascade);
 
             // ===================== CATEGORY - PRODUCT =====================
             modelBuilder.Entity<Product>()
@@ -120,30 +147,26 @@ namespace PetShop.Repositories.DBContext
 
             modelBuilder.Entity<Otp>()
                 .HasOne(o => o.User)
-                .WithMany(u => u.Otps) // nếu User có collection Otp thì chuyển thành .WithMany(u => u.Otps)
+                .WithMany(u => u.Otps)
                 .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ===================== DECIMAL PRECISION =====================
-            // Order.TotalAmount
+            // ===================== DECIMAL → NUMERIC (PostgreSQL) =====================
             modelBuilder.Entity<Order>()
                 .Property(o => o.TotalAmount)
-                .HasColumnType("decimal(18,2)");
+                .HasColumnType("numeric(18,2)");
 
-            // OrderDetail.UnitPrice
             modelBuilder.Entity<OrderDetail>()
                 .Property(od => od.UnitPrice)
-                .HasColumnType("decimal(18,2)");
+                .HasColumnType("numeric(18,2)");
 
-            // Payment.Amount
             modelBuilder.Entity<Payment>()
                 .Property(p => p.Amount)
-                .HasColumnType("decimal(18,2)");
+                .HasColumnType("numeric(18,2)");
 
-            // Product.Price
             modelBuilder.Entity<Product>()
                 .Property(p => p.Price)
-                .HasColumnType("decimal(18,2)");
+                .HasColumnType("numeric(18,2)");
         }
     }
 }
