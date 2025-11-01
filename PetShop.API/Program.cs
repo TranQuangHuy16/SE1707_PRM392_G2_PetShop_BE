@@ -116,8 +116,19 @@ builder.Services.AddCors(options =>
 //var connectionString = builder.Configuration.GetConnectionString("PetShop");
 
 // Đăng ký DbContext
+// Lấy connection string từ Render ENV hoặc appsettings.json
+var connectionString =
+    builder.Configuration.GetConnectionString("PetShop") ??
+    builder.Configuration["ConnectionStrings__PetShop"] ??
+    builder.Configuration["CONNECTION_STRING"]; // fallback cuối
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new Exception("❌ Database connection string is missing. Please set CONNECTION_STRING in environment variables.");
+}
+
 builder.Services.AddDbContext<PetShopDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("PetShop"))
+    options.UseNpgsql(connectionString)
 );
 
 
