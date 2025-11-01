@@ -116,9 +116,28 @@ builder.Services.AddCors(options =>
 //var connectionString = builder.Configuration.GetConnectionString("PetShop");
 
 // Đăng ký DbContext
+// ✅ Load connection string an toàn từ nhiều nguồn
+var connectionString =
+    builder.Configuration.GetConnectionString("PetShop") ??
+    builder.Configuration["ConnectionStrings__PetShop"] ??
+    builder.Configuration["CONNECTION_STRING"] ??
+    Environment.GetEnvironmentVariable("ConnectionStrings__PetShop") ??
+    Environment.GetEnvironmentVariable("CONNECTION_STRING");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    Console.WriteLine("❌ ERROR: Connection string is NULL or EMPTY!");
+}
+else
+{
+    Console.WriteLine($"✅ Connection string loaded: {connectionString}");
+}
+
+// Đăng ký DbContext
 builder.Services.AddDbContext<PetShopDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("PetShop")
-));
+    options.UseNpgsql(connectionString)
+);
+
 
 
 builder.Services.AddHttpClient();
