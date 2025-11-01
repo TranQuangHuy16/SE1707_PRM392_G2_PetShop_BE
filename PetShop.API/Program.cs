@@ -160,11 +160,24 @@ builder.Services.AddAutoMapper(typeof(PaymentMapper));
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+using var scope = app.Services.CreateScope();
+var dbContext = scope.ServiceProvider.GetRequiredService<PetShopDbContext>();
+
+var maxRetries = 5;
+for (int i = 0; i < maxRetries; i++)
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<PetShopDbContext>();
-    dbContext.Database.Migrate();
+    try
+    {
+        dbContext.Database.Migrate();
+        break;
+    }
+    catch
+    {
+        Console.WriteLine($"DB not ready, retry {i + 1}/{maxRetries}...");
+        Thread.Sleep(5000);
+    }
 }
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())

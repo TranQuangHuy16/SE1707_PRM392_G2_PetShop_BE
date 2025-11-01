@@ -27,7 +27,7 @@ services:
       - .env
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__PetShop="Host=postgres;Port=5432;Database=PetShop;Username=postgres;Password=YourStrong!Pass123"
+      - ConnectionStrings__PetShop=Host=postgres;Port=5432;Database=PetShop;Username=postgres;Password=YourStrong!Pass123
       - Jwt__Key=${JWT_KEY}
       - Jwt__Issuer=${JWT_ISSUER}
       - Jwt__Audience=${JWT_AUDIENCE}
