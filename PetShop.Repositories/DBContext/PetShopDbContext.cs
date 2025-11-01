@@ -43,7 +43,7 @@ namespace PetShop.Repositories.DBContext
 
             modelBuilder.Entity<UserAddress>()
                 .HasOne(a => a.User)
-                .WithMany()
+                .WithMany(u => u.Addresses)
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade); // OK: User xoá → Address xoá
 
@@ -63,7 +63,7 @@ namespace PetShop.Repositories.DBContext
 
             modelBuilder.Entity<CartItem>()
                 .HasOne(ci => ci.Product)
-                .WithMany()
+                .WithMany(p => p.CartItems)
                 .HasForeignKey(ci => ci.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -76,27 +76,27 @@ namespace PetShop.Repositories.DBContext
 
             modelBuilder.Entity<OrderDetail>()
                 .HasOne(od => od.Product)
-                .WithMany()
+                .WithMany(p => p.OrderDetails)
                 .HasForeignKey(od => od.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // ===================== PAYMENT - ORDER =====================
             modelBuilder.Entity<Payment>()
-                .HasOne<Order>()
-                .WithMany()
+                .HasOne(p => p.Order)
+                .WithMany(o => o.Payments)
                 .HasForeignKey(p => p.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // ===================== CHAT ROOM - USER =====================
             modelBuilder.Entity<ChatRoom>()
                 .HasOne(c => c.Customer)
-                .WithMany()
+                .WithMany(u => u.CustomerChatRooms)
                 .HasForeignKey(c => c.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ChatRoom>()
                 .HasOne(c => c.Admin)
-                .WithMany()
+                .WithMany(u => u.AdminChatRooms)
                 .HasForeignKey(c => c.AdminId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -109,8 +109,8 @@ namespace PetShop.Repositories.DBContext
 
             // ===================== NOTIFICATION - USER =====================
             modelBuilder.Entity<Notification>()
-                .HasOne<User>()
-                .WithMany()
+                .HasOne(n => n.User)
+                .WithMany(u => u.Notifications)
                 .HasForeignKey(n => n.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -123,6 +123,27 @@ namespace PetShop.Repositories.DBContext
                 .WithMany(u => u.Otps) // nếu User có collection Otp thì chuyển thành .WithMany(u => u.Otps)
                 .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // ===================== DECIMAL PRECISION =====================
+            // Order.TotalAmount
+            modelBuilder.Entity<Order>()
+                .Property(o => o.TotalAmount)
+                .HasColumnType("decimal(18,2)");
+
+            // OrderDetail.UnitPrice
+            modelBuilder.Entity<OrderDetail>()
+                .Property(od => od.UnitPrice)
+                .HasColumnType("decimal(18,2)");
+
+            // Payment.Amount
+            modelBuilder.Entity<Payment>()
+                .Property(p => p.Amount)
+                .HasColumnType("decimal(18,2)");
+
+            // Product.Price
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Price)
+                .HasColumnType("decimal(18,2)");
         }
     }
 }

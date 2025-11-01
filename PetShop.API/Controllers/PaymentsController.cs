@@ -20,9 +20,15 @@ namespace PetShop.API.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllPayments()
+        public async Task<IActionResult> GetAllPayments([FromQuery] int? status = null)
         {
-            var payments = await _paymentService.GetAllPaymentsAsync();
+            PetShop.Repositories.Models.Enums.PaymentStatusEnum? paymentStatus = null;
+            if (status.HasValue)
+            {
+                paymentStatus = (PetShop.Repositories.Models.Enums.PaymentStatusEnum)status.Value;
+            }
+
+            var payments = await _paymentService.GetAllPaymentsAsync(paymentStatus);
             return Ok(payments);
         }
 
@@ -49,7 +55,7 @@ namespace PetShop.API.Controllers
         }
 
         [HttpGet("my-payments")]
-        public async Task<IActionResult> GetMyPayments()
+        public async Task<IActionResult> GetMyPayments([FromQuery] int? status = null)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
@@ -57,7 +63,13 @@ namespace PetShop.API.Controllers
                 return Unauthorized();
             }
 
-            var payments = await _paymentService.GetPaymentsByUserIdAsync(userId);
+            PetShop.Repositories.Models.Enums.PaymentStatusEnum? paymentStatus = null;
+            if (status.HasValue)
+            {
+                paymentStatus = (PetShop.Repositories.Models.Enums.PaymentStatusEnum)status.Value;
+            }
+
+            var payments = await _paymentService.GetPaymentsByUserIdAsync(userId, paymentStatus);
             return Ok(payments);
         }
 
@@ -96,6 +108,40 @@ namespace PetShop.API.Controllers
                 return NotFound(new { message = "Payment not found" });
             }
             return Ok(new { message = "Payment deleted successfully" });
+        }
+
+        [HttpPost("zalopay-callback")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ZaloPayCallback([FromBody] Dictionary<string, object> cbdata)
+        {
+            try
+            {
+                var result = await _paymentService.ProcessZaloPayCallbackAsync(cbdata);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { return_code = 0, return_message = ex.Message });
+            }
+        }
+
+        [HttpPost("confirm/{orderId}")]
+        [Authorize]
+        public async Task<IActionResult> ConfirmPayment(int orderId)
+        {
+            try
+            {
+                var result = await _paymentService.ConfirmPaymentByOrderIdAsync(orderId);
+                if (result)
+                {
+                    return Ok(new { success = true, message = "Payment confirmed successfully" });
+                }
+                return NotFound(new { success = false, message = "Payment not found or already confirmed" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
         }
     }
 }

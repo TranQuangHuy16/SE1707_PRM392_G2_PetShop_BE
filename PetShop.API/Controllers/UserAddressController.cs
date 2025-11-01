@@ -55,6 +55,20 @@ namespace PetShop.API.Controllers
             return Ok(result);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetUserAddresses()
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                           ?? User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            var addresses = await _userAddressService.GetByUserIdAsync(userId);
+            return Ok(addresses);
+        }
+
         /// <summary>
         /// Cập nhật địa chỉ người dùng theo ID.
         /// </summary>

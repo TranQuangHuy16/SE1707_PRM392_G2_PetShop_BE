@@ -12,6 +12,7 @@ namespace PetShop.Repositories.Models
         public decimal Amount { get; set; }
         public PaymentStatusEnum PaymentStatus { get; set; } = PaymentStatusEnum.Pending;
         public bool IsActive { get; set; } = true;
+        public string? TransactionId { get; set; }
 
         // Navigation
         public Order Order { get; set; }

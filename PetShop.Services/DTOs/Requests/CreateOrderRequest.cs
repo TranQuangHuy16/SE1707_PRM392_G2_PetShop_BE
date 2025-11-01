@@ -6,7 +6,6 @@ namespace PetShop.Services.DTOs.Requests
     {
         public int? AddressId { get; set; }
         
-        [Required]
         public string? Note { get; set; }
     }
 }
