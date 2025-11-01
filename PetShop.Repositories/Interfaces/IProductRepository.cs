@@ -10,6 +10,7 @@ namespace PetShop.Repositories.Interfaces
     public interface IProductRepository
     {
         Task<IEnumerable<Product>> GetAllProductsAsync();
+        Task<IEnumerable<Product>> GetAllProductsNotActiveAsync();
         Task<Product?> GetProductByIdAsync(int productId);
         Task<Product> AddProductAsync(Product product);
         Task UpdateProductAsync(Product product);
@@ -17,5 +18,6 @@ namespace PetShop.Repositories.Interfaces
         Task<bool> CategoryExistsAsync(int categoryId);
 
         Task<IEnumerable<Product>> GetProductsByCategoryIdAsync(int categoryId);
+        Task<IEnumerable<Product>> GetProductsByCategoryIdNotActiveAsync(int categoryId);
     }
 }

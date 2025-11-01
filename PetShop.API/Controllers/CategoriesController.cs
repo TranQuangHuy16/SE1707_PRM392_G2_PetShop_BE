@@ -17,7 +17,7 @@ namespace PetShop.API.Controllers
             _categoryService = categoryService;
         }
 
-      
+
         // GET: api/categories
         [HttpGet]
         [AllowAnonymous]
@@ -27,7 +27,7 @@ namespace PetShop.API.Controllers
             return Ok(categories);
         }
 
-        
+
         // GET: api/categories/5
         [HttpGet("{id}")]
         [AllowAnonymous]
@@ -50,7 +50,7 @@ namespace PetShop.API.Controllers
             return CreatedAtAction(nameof(GetCategoryById), new { id = newCategory.CategoryId }, newCategory);
         }
 
-      
+
         // PUT: api/categories/5
         [HttpPut("{id}")]
         // [Authorize(Roles = "Admin")]
@@ -64,7 +64,7 @@ namespace PetShop.API.Controllers
             return Ok(result);
         }
 
-     
+
         // DELETE: api/categories/5
         [HttpDelete("{id}")]
         // [Authorize(Roles ="Admin")]

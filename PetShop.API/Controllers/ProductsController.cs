@@ -8,7 +8,7 @@ namespace PetShop.API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ProductsController : ControllerBase 
+    public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;
 
@@ -17,36 +17,46 @@ namespace PetShop.API.Controllers
             _productService = productService;
         }
 
-        
+
         // GET: api/products
         [HttpGet]
-        [AllowAnonymous] 
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllProducts()
         {
             var products = await _productService.GetAllProductsAsync();
             return Ok(products);
         }
 
-      
+        // GET: api/products/notactive
+        [HttpGet("notactive")]
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllProductsNotActive()
+        {
+            var products = await _productService.GetAllProductsNotActiveAsync();
+            return Ok(products);
+        }
+
+
         // GET: api/products/{id}
         [HttpGet("{id}")]
-        [AllowAnonymous] 
+        [AllowAnonymous]
         public async Task<IActionResult> GetProductById(int id)
         {
             var product = await _productService.GetProductByIdAsync(id);
 
             if (product == null)
             {
-                return NotFound(); 
+                return NotFound();
             }
 
             return Ok(product);
         }
 
-      
+
         // POST: api/products
         [HttpPost]
-        // [Authorize(Roles = "Admin")] 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateProduct([FromBody] ProductCreateRequest request)
         {
 
@@ -64,7 +74,7 @@ namespace PetShop.API.Controllers
 
         // PUT: api/products/{id}
         [HttpPut("{id}")]
-        // [Authorize(Roles = "Admin")] 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateProduct(int id, [FromBody] ProductUpdateRequest request)
         {
             try
@@ -72,10 +82,10 @@ namespace PetShop.API.Controllers
                 var result = await _productService.UpdateProductAsync(id, request);
                 if (!result)
                 {
-                    return NotFound(); 
+                    return NotFound();
                 }
 
-                return Ok(result); 
+                return Ok(result);
             }
             catch (System.Exception ex)
             {
@@ -86,13 +96,13 @@ namespace PetShop.API.Controllers
 
         // DELETE: api/products/{id}
         [HttpDelete("{id}")]
-        // [Authorize(Roles = "Admin")] 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             var result = await _productService.DeleteProductAsync(id);
             if (!result)
             {
-                return NotFound(); 
+                return NotFound();
             }
 
             return Ok(result);
@@ -104,6 +114,14 @@ namespace PetShop.API.Controllers
         public async Task<IActionResult> GetProductsByCategoryId(int categoryId)
         {
             var products = await _productService.GetProductsByCategoryIdAsync(categoryId);
+            return Ok(products);
+        }
+        // GET: api/products/category/notactive/5
+        [HttpGet("category/notactive/{categoryId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetProductsByCategoryIdNotActive(int categoryId)
+        {
+            var products = await _productService.GetProductsByCategoryIdNotActiveAsync(categoryId);
             return Ok(products);
         }
     }

@@ -49,8 +49,8 @@ namespace PetShop.Repositories.DBContext
 
             // ===================== CATEGORY - PRODUCT =====================
             modelBuilder.Entity<Product>()
-                .HasOne<Category>()
-                .WithMany()
+                .HasOne(p => p.Category)
+                .WithMany(c => c.Products)
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 

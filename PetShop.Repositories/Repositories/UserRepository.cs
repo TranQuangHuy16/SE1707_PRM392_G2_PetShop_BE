@@ -3,11 +3,6 @@ using PetShop.Repositories.Basic;
 using PetShop.Repositories.DBContext;
 using PetShop.Repositories.Interfaces;
 using PetShop.Repositories.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PetShop.Repositories.Repositories
 {
@@ -16,6 +11,20 @@ namespace PetShop.Repositories.Repositories
         public UserRepository() { }
 
         public UserRepository(PetShopDbContext context) => _context = context;
+
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            return await _context.Users
+                        .Include(add => add.Addresses)
+                        .Include(cart => cart.Carts)
+                        .Include(order => order.Orders)
+                        .Include(notif => notif.Notifications)
+                        .Include(cr => cr.CustomerChatRooms)
+                        .Include(cr => cr.AdminChatRooms)
+                        .Include(msg => msg.Messages)
+                        .Include(otp => otp.Otps)
+                        .ToListAsync();
+        }
 
         public async Task<User> GetUserByUsernameAndPasswordAsync(string username, string password)
         {
@@ -67,7 +76,15 @@ namespace PetShop.Repositories.Repositories
 
         public async Task<User> GetUserByIdAsync(int id)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+            return await _context.Users
+            .Include(add => add.Addresses)
+            .FirstOrDefaultAsync(u => u.UserId == id);
+        }
+
+        public async Task<int> UpdateAsync(User user)
+        {
+            _context.Users.Update(user);
+            return await _context.SaveChangesAsync();
         }
     }
 }

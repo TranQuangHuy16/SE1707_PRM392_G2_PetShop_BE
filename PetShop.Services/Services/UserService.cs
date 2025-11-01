@@ -1,5 +1,8 @@
-﻿using PetShop.Repositories.Interfaces;
+﻿using AutoMapper;
+using PetShop.API.DTOs;
+using PetShop.Repositories.Interfaces;
 using PetShop.Repositories.Models;
+using PetShop.Services.DTOs.Requests;
 using PetShop.Services.DTOs.Responses;
 using PetShop.Services.Interfaces;
 using System;
@@ -14,9 +17,33 @@ namespace PetShop.Services.Services
     {
         private readonly IUserRepository _userRepository;
 
-        public UserService(IUserRepository userRepository)
+        private readonly IMapper _mapper;
+
+        public UserService(IUserRepository userRepository, IMapper mapper)
         {
             _userRepository = userRepository;
+            _mapper = mapper;
+        }
+        public async Task<IEnumerable<UserDetailResponseDto>> GetAll()
+        {
+            var users = await _userRepository.GetAllUsersAsync();
+
+            var userResponses = users.Select(
+                user => _mapper.Map<UserDetailResponseDto>(user)
+            );
+
+            return userResponses;
+        }
+
+        public async Task<UserDetailResponseDto> GetDetailAsync(int id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+
+            if (user == null) return null!;
+
+            var userResponse = _mapper.Map<UserDetailResponseDto>(user);
+
+            return userResponse;
         }
 
         public async Task<UserResponse> GetById(int id)
@@ -25,18 +52,51 @@ namespace PetShop.Services.Services
 
             if (user == null) throw new Exception("User not found");
 
-            var userResponse = new UserResponse
-            {
-                UserId = user.UserId,
-                Username = user.Username,
-                FullName = user.FullName,
-                Password = user.Password,
-                Email = user.Email,
-                Phone = user.Phone,
-                ImgUrl = user.ImgUrl,
-            };
+            var userResponse = _mapper.Map<UserResponse>(user);
 
             return userResponse;
         }
+
+        public async Task<UserDetailResponseDto> UpdateUserAsync(int id, UpdateUserRequest request)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+
+            if (user == null) throw new Exception("User not found");
+
+            // Update Role if provided
+            if (request.Role.HasValue)
+            {
+                user.Role = request.Role.Value;
+            }
+
+            // Update IsActive if provided
+            if (request.IsActive.HasValue)
+            {
+                user.IsActive = request.IsActive.Value;
+            }
+
+            int res = await _userRepository.UpdateAsync(user);
+
+            if (res == 0) throw new Exception("Update failed");
+
+            var userResponse = _mapper.Map<UserDetailResponseDto>(user);
+
+            return userResponse;
+        }
+        public async Task<int> DeleteUserAsync(int id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+
+            if (user == null) throw new Exception("User not found");
+
+            user.IsActive = false;
+
+            int res = await _userRepository.UpdateAsync(user);
+
+            if (res == 0) throw new Exception("Delete failed");
+
+            return res;
+        }
     }
 }
+

@@ -9,6 +9,7 @@ namespace PetShop.Repositories.Interfaces
 {
     public interface IUserRepository
     {
+        Task<IEnumerable<User>> GetAllUsersAsync();
         Task<User> CreateUserAsync(User newUser);
         Task<User> GetUserByUsernameAndPasswordAsync(string username, string password);
         Task<User> GetUserByEmailAsync(string email);

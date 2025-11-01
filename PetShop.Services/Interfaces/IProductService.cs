@@ -11,10 +11,12 @@ namespace PetShop.Services.Interfaces
     public interface IProductService
     {
         Task<IEnumerable<ProductResponse>> GetAllProductsAsync();
+        Task<IEnumerable<ProductResponse>> GetAllProductsNotActiveAsync();
         Task<ProductResponse?> GetProductByIdAsync(int productId);
         Task<ProductResponse> CreateProductAsync(ProductCreateRequest request);
         Task<bool> UpdateProductAsync(int productId, ProductUpdateRequest request);
         Task<bool> DeleteProductAsync(int productId);
         Task<IEnumerable<ProductResponse>> GetProductsByCategoryIdAsync(int categoryId);
+        Task<IEnumerable<ProductResponse>> GetProductsByCategoryIdNotActiveAsync(int categoryId);
     }
 }

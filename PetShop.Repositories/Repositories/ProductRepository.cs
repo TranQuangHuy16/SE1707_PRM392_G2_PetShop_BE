@@ -27,6 +27,14 @@ namespace PetShop.Repositories.Repositories
                                  .ToListAsync();
         }
 
+        public async Task<IEnumerable<Product>> GetAllProductsNotActiveAsync()
+        {
+            return await _context.Products
+                                 .Include(p => p.Category)
+                                 .Where(p => !p.IsActive)
+                                 .ToListAsync();
+        }
+
         public async Task<Product?> GetProductByIdAsync(int productId)
         {
             return await _context.Products
@@ -51,7 +59,7 @@ namespace PetShop.Repositories.Repositories
         public async Task UpdateProductAsync(Product product)
         {
             //_context.Products.Update(product); 
-            _context.Entry(product).State = EntityState.Modified; 
+            _context.Entry(product).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
 
@@ -71,6 +79,14 @@ namespace PetShop.Repositories.Repositories
             return await _context.Products
                                  .Include(p => p.Category)
                                  .Where(p => p.CategoryId == categoryId && p.IsActive)
+                                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Product>> GetProductsByCategoryIdNotActiveAsync(int categoryId)
+        {
+            return await _context.Products
+                                 .Include(p => p.Category)
+                                 .Where(p => p.CategoryId == categoryId && !p.IsActive)
                                  .ToListAsync();
         }
     }
