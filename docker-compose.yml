@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: YourStrong!Pass123
-      POSTGRES_DB: petshopdb
+      POSTGRES_DB: PetShop
     ports:
       - "5432:5432"
     volumes:
