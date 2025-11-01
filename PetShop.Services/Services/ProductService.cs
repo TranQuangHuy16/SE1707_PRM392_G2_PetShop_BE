@@ -29,6 +29,12 @@ namespace PetShop.Services.Services
             return _mapper.Map<IEnumerable<ProductResponse>>(products);
         }
 
+        public async Task<IEnumerable<ProductResponse>> GetAllProductsNotActiveAsync()
+        {
+            var products = await _productRepo.GetAllProductsNotActiveAsync();
+            return _mapper.Map<IEnumerable<ProductResponse>>(products);
+        }
+
         public async Task<ProductResponse?> GetProductByIdAsync(int productId)
         {
             var product = await _productRepo.GetProductByIdAsync(productId);
@@ -91,6 +97,11 @@ namespace PetShop.Services.Services
         public async Task<IEnumerable<ProductResponse>> GetProductsByCategoryIdAsync(int categoryId)
         {
             var products = await _productRepo.GetProductsByCategoryIdAsync(categoryId);
+            return _mapper.Map<IEnumerable<ProductResponse>>(products);
+        }
+        public async Task<IEnumerable<ProductResponse>> GetProductsByCategoryIdNotActiveAsync(int categoryId)
+        {
+            var products = await _productRepo.GetProductsByCategoryIdNotActiveAsync(categoryId);
             return _mapper.Map<IEnumerable<ProductResponse>>(products);
         }
     }

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PetShop.API.DTOs;
+using PetShop.Services.DTOs.Requests;
 using PetShop.Services.Interfaces;
 using System.Security.Claims;
 
@@ -14,6 +16,14 @@ namespace PetShop.API.Controllers
         public UsersController(IUserService userService)
         {
             _userService = userService;
+        }
+
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await _userService.GetAll();
+            return Ok(users);
         }
 
         [HttpGet]
@@ -36,5 +46,49 @@ namespace PetShop.API.Controllers
 
             return Ok(user);
         }
+
+        [HttpGet("detail/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetUserDetailAsync(int id)
+        {
+            var user = await _userService.GetDetailAsync(id);
+            if (user == null) return NotFound();
+            return Ok(user);
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
+        {
+            try
+            {
+                UserDetailResponseDto updatedUser = await _userService.UpdateUserAsync(id, request);
+                return Ok(updatedUser);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPatch("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            try
+            {
+                int res = await _userService.DeleteUserAsync(id);
+                if (res == 0)
+                {
+                    return NotFound(new { message = "User not found or could not be deleted." });
+                }
+                return Ok(new { message = "User deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
     }
 }
