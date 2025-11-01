@@ -181,8 +181,29 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<PetShopDbContext>();
-    dbContext.Database.Migrate();
+
+    int retryCount = 0;
+    const int maxRetries = 5;
+
+    while (true)
+    {
+        try
+        {
+            dbContext.Database.Migrate();
+            Console.WriteLine("✅ Database migration successful!");
+            break;
+        }
+        catch (Exception ex)
+        {
+            retryCount++;
+            Console.WriteLine($"⚠️ Migration attempt {retryCount} failed: {ex.Message}");
+            if (retryCount >= maxRetries)
+                throw;
+            Thread.Sleep(5000); // chờ 5s rồi thử lại
+        }
+    }
 }
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
