@@ -48,15 +48,18 @@ namespace PetShop.Repositories.Repositories
                 .Select(u => u.UserId)
                 .FirstOrDefaultAsync();
 
-            // 3️⃣ Tạo ChatRoom
-            var chatRoom = new ChatRoom
+            // 3️⃣ Chỉ tạo ChatRoom nếu có admin trong hệ thống
+            if (adminId > 0)
             {
-                AdminId = adminId,
-                CustomerId = newUser.UserId // Lúc này đã có giá trị thật
-            };
+                var chatRoom = new ChatRoom
+                {
+                    AdminId = adminId,
+                    CustomerId = newUser.UserId // Lúc này đã có giá trị thật
+                };
 
-            await _context.ChatRooms.AddAsync(chatRoom);
-            await _context.SaveChangesAsync();
+                await _context.ChatRooms.AddAsync(chatRoom);
+                await _context.SaveChangesAsync();
+            }
 
             return newUser;
         }

@@ -129,6 +129,9 @@ builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 //Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -140,10 +143,16 @@ builder.Services.AddScoped<IMapboxService, MapboxService>();
 builder.Services.AddScoped<IUserAddressService, UserAddressService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IZaloPayService, ZaloPayService>();
 
 
 //mapper
 builder.Services.AddAutoMapper(typeof(ProductMapper));
+builder.Services.AddAutoMapper(typeof(CartMapper));
+builder.Services.AddAutoMapper(typeof(PaymentMapper));
 
 
 var app = builder.Build();
