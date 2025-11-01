@@ -8,15 +8,12 @@ using PetShop.Repositories.Repositories;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using PetShop.Services.Mapper;
-using Npgsql;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+// Add services to the container.
 
-
-// ============ JWT AUTHENTICATION ============
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
@@ -29,10 +26,9 @@ builder.Services.AddAuthentication("Bearer")
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero // Loại bỏ độ trễ thời gian (nếu có)
         };
-
-        // Kiểm tra blacklist token
+        // 🔥 Thêm phần kiểm tra blacklist
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
@@ -50,7 +46,7 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
-// ============ CONTROLLERS ============
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -58,18 +54,18 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.WriteIndented = true;
     });
 
-// ============ SWAGGER ============
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { Title = "PetShop API", Version = "v1" });
+    c.SwaggerDoc("v1", new() { Title = "Dorfo API", Version = "v1" });
 
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,   // ✅ dùng Http
+        Scheme = "bearer",                                         // ✅ phải có bearer
+        BearerFormat = "JWT",                                      // ✅ format JWT
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
         Description = "Enter JWT token with **Bearer** prefix. Example: `Bearer {your token}`"
     });
@@ -82,61 +78,65 @@ builder.Services.AddSwaggerGen(c =>
                 Reference = new Microsoft.OpenApi.Models.OpenApiReference
                 {
                     Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                    Id = "Bearer"   // phải trùng với tên ở trên
                 }
             },
             new string[] {}
         }
     });
+
+    c.MapType<TimeSpan>(() => new Microsoft.OpenApi.Models.OpenApiSchema
+    {
+        Type = "string",
+        Example = new Microsoft.OpenApi.Any.OpenApiString("08:00:00"),
+        Format = "time"
+    });
+
+    c.MapType<TimeSpan?>(() => new Microsoft.OpenApi.Models.OpenApiSchema
+    {
+        Type = "string",
+        Example = new Microsoft.OpenApi.Any.OpenApiString("08:00:00"),
+        Format = "time"
+    });
 });
 
-// ============ CORS ============
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
-        policy => policy
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader());
+        policy =>
+        {
+            policy.AllowAnyOrigin()   // Cho phép tất cả domain
+                  .AllowAnyMethod()   // Cho phép tất cả method (GET, POST, PUT, DELETE...)
+                  .AllowAnyHeader();  // Cho phép tất cả header
+        });
 });
 
-// ============ CONNECTION STRING ============
-var connectionString =
-    builder.Configuration.GetConnectionString("PetShop") ??
-    builder.Configuration["ConnectionStrings__PetShop"] ??
-    builder.Configuration["CONNECTION_STRING"] ??
-    Environment.GetEnvironmentVariable("ConnectionStrings__PetShop") ??
-    Environment.GetEnvironmentVariable("CONNECTION_STRING");
 
-if (string.IsNullOrEmpty(connectionString))
-{
-    Console.WriteLine("❌ ERROR: Connection string is NULL or EMPTY!");
-}
-else
-{
-    Console.WriteLine($"✅ Connection string loaded: {connectionString}");
-}
+// Đọc connection string từ appsettings.json
+//var connectionString = builder.Configuration.GetConnectionString("PetShop");
 
-// Bắt lỗi SSL Mode nếu viết sai (nhiều bạn gõ "SSL Mode" thay vì "Ssl Mode")
-connectionString = connectionString.Replace("SSL Mode", "Ssl Mode");
-
-// ============ DB CONTEXT ============
+// Đăng ký DbContext
 builder.Services.AddDbContext<PetShopDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PetShop")
+    )
+);
 
-// ============ REPOSITORIES & SERVICES ============
+
 builder.Services.AddHttpClient();
 
+//Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOtpRepository, OtpRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
+
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
+//Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -151,67 +151,35 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IZaloPayService, ZaloPayService>();
 
+
+//mapper
 builder.Services.AddAutoMapper(typeof(ProductMapper));
 builder.Services.AddAutoMapper(typeof(CartMapper));
 builder.Services.AddAutoMapper(typeof(PaymentMapper));
 
+
 var app = builder.Build();
 
-// ============ DATABASE MIGRATION (có retry + delay) ============
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<PetShopDbContext>();
-    var connectionStr = dbContext.Database.GetConnectionString();
-
-    Console.WriteLine("⏳ Waiting for PostgreSQL to be ready...");
-    Thread.Sleep(8000); // chờ DB Render khởi động
-
-    try
-    {
-        Console.WriteLine("🔍 Testing connection...");
-        using var conn = new NpgsqlConnection(connectionStr);
-        conn.Open();
-        Console.WriteLine("✅ PostgreSQL connection successful!");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ PostgreSQL connection failed: {ex.Message}");
-    }
-
-    int retryCount = 0;
-    const int maxRetries = 5;
-
-    while (true)
-    {
-        try
-        {
-            Console.WriteLine("🔄 Attempting database migration...");
-            dbContext.Database.Migrate();
-            Console.WriteLine("✅ Database migration successful!");
-            break;
-        }
-        catch (Exception ex)
-        {
-            retryCount++;
-            Console.WriteLine($"⚠️ Migration attempt {retryCount} failed: {ex.Message}");
-            if (retryCount >= maxRetries)
-                throw;
-            Thread.Sleep(5000);
-        }
-    }
+    dbContext.Database.Migrate();
 }
 
-// ============ APP PIPELINE ============
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 app.Run();
