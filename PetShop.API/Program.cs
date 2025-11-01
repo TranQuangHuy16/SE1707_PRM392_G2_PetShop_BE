@@ -113,11 +113,11 @@ builder.Services.AddCors(options =>
 
 
 // Đọc connection string từ appsettings.json
-var connectionString = builder.Configuration.GetConnectionString("PetShop");
+//var connectionString = builder.Configuration.GetConnectionString("PetShop");
 
 // Đăng ký DbContext
 builder.Services.AddDbContext<PetShopDbContext>(options =>
-    options.UseSqlServer(connectionString,
+    options.UseSqlServer(builder.Configuration.GetConnectionString("PetShop"),
         sqlOptions => sqlOptions.EnableRetryOnFailure(
             maxRetryCount: 5,
             maxRetryDelay: TimeSpan.FromSeconds(10),
