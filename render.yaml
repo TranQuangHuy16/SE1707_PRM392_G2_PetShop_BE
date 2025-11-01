@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: petshop-api
+    env: dotnet
+    plan: free
+    region: singapore
+    buildCommand: "dotnet publish PetShop.API/PetShop.API.csproj -c Release -o out"
+    startCommand: "dotnet out/PetShop.API.dll"
+    autoDeploy: true
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: CONNECTION_STRING
+        sync: false
