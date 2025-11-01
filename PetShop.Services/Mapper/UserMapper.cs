@@ -9,11 +9,14 @@ namespace PetShop.Services.Mapper
     {
         public UserMapper()
         {
+            // Mapping sang UserDetailResponseDto
             CreateMap<User, UserDetailResponseDto>()
                 .ForMember(dest => dest.Addresses, opt => opt.MapFrom(src => src.Addresses.ToList()));
 
-            // CreateMap<User, UserResponse>()
-            //     .ForMember(dest => dest., opt => opt.MapFrom(src => src.Role.ToString()));
+            // ? Mapping sang UserResponse (b? thi?u)
+            //CreateMap<User, UserResponse>()
+            //    .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()))
+            //    .ReverseMap();
         }
     }
 }

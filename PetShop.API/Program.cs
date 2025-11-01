@@ -117,7 +117,15 @@ var connectionString = builder.Configuration.GetConnectionString("PetShop");
 
 // Đăng ký DbContext
 builder.Services.AddDbContext<PetShopDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString,
+        sqlOptions => sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null
+        )
+    )
+);
+
 
 builder.Services.AddHttpClient();
 
@@ -157,8 +165,14 @@ builder.Services.AddAutoMapper(typeof(PaymentMapper));
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<PetShopDbContext>();
+    dbContext.Database.EnsureCreated(); // hoặc dbContext.Database.Migrate();
+}
+
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();

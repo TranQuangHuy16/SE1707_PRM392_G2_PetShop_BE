@@ -46,13 +46,13 @@ namespace PetShop.Services.Services
             return userResponse;
         }
 
-        public async Task<UserResponse> GetById(int id)
+        public async Task<UserDetailResponseDto> GetById(int id)
         {
             var user = await _userRepository.GetUserByIdAsync(id);
 
             if (user == null) throw new Exception("User not found");
 
-            var userResponse = _mapper.Map<UserResponse>(user);
+            var userResponse = _mapper.Map<UserDetailResponseDto>(user);
 
             return userResponse;
         }
