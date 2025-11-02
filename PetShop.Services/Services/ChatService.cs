@@ -1,5 +1,6 @@
 ﻿using PetShop.Repositories.Interfaces;
 using PetShop.Repositories.Models;
+using PetShop.Repositories.Repositories;
 using PetShop.Services.DTOs.Requests;
 using PetShop.Services.DTOs.Responses;
 using PetShop.Services.Interfaces;
@@ -14,10 +15,14 @@ namespace PetShop.Services.Services
     public class ChatService : IChatService
     {
         private readonly IChatRepository _chatRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly NotificationService _notificationService;
 
-        public ChatService(IChatRepository chatRepository)
+        public ChatService(IChatRepository chatRepository, IUserRepository userRepository, NotificationService notificationService)
         {
             _chatRepository = chatRepository;
+            _userRepository = userRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<ChatRoom> CreateChatRoomAsync(CreateChatRoomRequest dto)
@@ -56,19 +61,49 @@ namespace PetShop.Services.Services
 
         public async Task<int> SendMessageAsync(ReceiveMessageResponse response)
         {
-            var message = new Message()
+            // 1️⃣ Lưu message vào database thông qua repository
+            var message = new Message
             {
-                SenderId = response.SenderId,
                 ChatRoomId = response.ChatRoomId,
+                SenderId = response.SenderId,
                 MessageText = response.MessageText,
-                SentAt = DateTime.Now
+                SentAt = DateTime.UtcNow
             };
+
+
+
+            // 2️⃣ Xác định người nhận
+            var room = await _chatRepository.GetChatRoomByRoomIdAsync(response.ChatRoomId);
+            if (room == null)
+                throw new Exception("Chat room not found");
+
+            int receiverId = (room.CustomerId == response.SenderId)
+                ? room.AdminId
+                : room.CustomerId;
+
+            var receiver = await _userRepository.GetUserByIdAsync(receiverId);
+
+            // 3️⃣ Gửi thông báo qua Firebase
+            if (!string.IsNullOrEmpty(receiver?.FcmToken))
+            {
+                await _notificationService.SendMessageAsync(
+                    receiver.FcmToken,
+                    "New Message",
+                    response.MessageText
+                );
+            }
+
             return await _chatRepository.SendMessageAsync(message);
         }
 
         public async Task<bool> DeleteChatRoomAsync(int id)
         {
             return await _chatRepository.DeleteChatRoomAsync(id);
+        }
+
+        public async Task<IEnumerable<ChatRoom>> GetChatRoomByAdminIdAsync(int adminId)
+        {
+            return await _chatRepository.GetChatRoomByAdminIdAsync(adminId);
         }
     }
 }

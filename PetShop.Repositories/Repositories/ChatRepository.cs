@@ -66,6 +66,20 @@ namespace PetShop.Repositories.Repositories
                 .OrderBy(m => m.SentAt)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<ChatRoom>> GetChatRoomByAdminIdAsync(int adminId)
+        {
+            return await _context.ChatRooms
+                .Include(r => r.Messages)
+                .Where(r => r.AdminId == adminId).ToArrayAsync();
+        }
+
+        public async Task<ChatRoom?> GetChatRoomByRoomIdAsync(int id)
+        {
+            return await _context.ChatRooms
+                .Include(r => r.Messages)
+                .FirstOrDefaultAsync(r => r.ChatRoomId == id);
+        }
     }
 }
 
