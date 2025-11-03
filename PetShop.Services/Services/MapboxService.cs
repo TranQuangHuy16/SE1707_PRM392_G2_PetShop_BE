@@ -1,4 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Org.BouncyCastle.Ocsp;
+using PetShop.Services.DTOs.Requests;
 using PetShop.Services.DTOs.Responses;
 using PetShop.Services.Interfaces;
 using System;
@@ -42,5 +45,25 @@ namespace PetShop.Services.Services
                 lat = coordinates[1]
             };
         }
+
+        public async Task<MapboxRouteResponse?> GetRoute(RouteRequest req)
+        {
+            var url = $"https://api.mapbox.com/directions/v5/mapbox/driving/" +
+                      $"{req.StartLng},{req.StartLat};{req.EndLng},{req.EndLat}" +
+                      $"?geometries=geojson&overview=full&steps=true&access_token={_accessToken}";
+
+            using var client = new HttpClient();
+
+            var response = await client.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Mapbox error: {content}");
+            }
+
+            return JsonConvert.DeserializeObject<MapboxRouteResponse>(content);
+        }
+
     }
 }

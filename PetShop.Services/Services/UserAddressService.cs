@@ -105,6 +105,12 @@ namespace PetShop.Services.Services
                 Longitude = entity.Longitude
             };
         }
+
+        public async Task<UserAddressResponse> GetAdmin()
+        {
+            var addr = await _userAddressRepository.GetAdmin();
+            return MapToResponse(addr);
+        }
     }
 
 }
