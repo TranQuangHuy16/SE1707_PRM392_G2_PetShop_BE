@@ -133,8 +133,19 @@ namespace PetShop.API.Controllers
                 if (route?.routes == null || !route.routes.Any())
                     return NotFound(new { message = "Không tìm thấy route." });
 
-                var coords = route.routes.First().geometry.coordinates;
-                return Ok(new { coordinates = coords });
+                var firstRoute = route.routes.First();
+
+                // Code cũ: (Chỉ trả về coords)
+                // var coords = route.routes.First().geometry.coordinates;
+                // return Ok(new { coordinates = coords });
+
+                // Code mới: (Trả về cả 3)
+                return Ok(new
+                {
+                    coordinates = firstRoute.geometry.coordinates,
+                    distance = firstRoute.distance,
+                    duration = firstRoute.duration
+                });
             }
             catch (Exception ex)
             {

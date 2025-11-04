@@ -14,6 +14,8 @@ namespace PetShop.Services.DTOs.Responses
     public class Route
     {
         public Geometry geometry { get; set; }
+        public double distance { get; set; }
+        public double duration { get; set; }
     }
 
     public class Geometry
