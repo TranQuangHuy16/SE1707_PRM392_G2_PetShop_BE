@@ -19,6 +19,8 @@ namespace PetShop.Repositories.Models
         public UserRoleEnum Role { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }
+        public string? FcmToken { get; set; }
+
 
         // Navigation
         public ICollection<UserAddress> Addresses { get; set; }

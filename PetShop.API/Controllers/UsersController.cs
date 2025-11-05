@@ -71,7 +71,7 @@ namespace PetShop.API.Controllers
             }
         }
 
-        [HttpPatch("{id}")]
+        [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -88,6 +88,15 @@ namespace PetShop.API.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }
+
+        [HttpPut("{id}/fcm-token")]
+        public async Task<IActionResult> UpdateFcmToken(int id, [FromBody] string fcmToken)
+        {
+            var success = await _userService.UpdateFcmTokenAsync(id, fcmToken);
+            if (!success) return NotFound(new { message = "User not found" });
+
+            return Ok(new { success = true });
         }
 
     }

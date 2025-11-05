@@ -86,5 +86,6 @@ namespace PetShop.Repositories.Repositories
             _context.Users.Update(user);
             return await _context.SaveChangesAsync();
         }
+
     }
 }
