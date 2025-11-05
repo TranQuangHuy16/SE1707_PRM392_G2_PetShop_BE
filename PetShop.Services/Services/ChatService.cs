@@ -61,7 +61,7 @@ namespace PetShop.Services.Services
 
         public async Task<int> SendMessageAsync(ReceiveMessageResponse response)
         {
-            // 1️⃣ Lưu message vào database thông qua repository
+            // 1️⃣ Lưu message vào database
             var message = new Message
             {
                 ChatRoomId = response.ChatRoomId,
@@ -70,31 +70,34 @@ namespace PetShop.Services.Services
                 SentAt = DateTime.UtcNow
             };
 
-
-
-            // 2️⃣ Xác định người nhận
+            // 2️⃣ Lấy thông tin phòng chat
             var room = await _chatRepository.GetChatRoomByRoomIdAsync(response.ChatRoomId);
             if (room == null)
                 throw new Exception("Chat room not found");
 
+            // 3️⃣ Xác định người nhận
             int receiverId = (room.CustomerId == response.SenderId)
                 ? room.AdminId
                 : room.CustomerId;
 
             var receiver = await _userRepository.GetUserByIdAsync(receiverId);
+            var sender = await _userRepository.GetUserByIdAsync(response.SenderId);
 
-            // 3️⃣ Gửi thông báo qua Firebase
+            // 4️⃣ Gửi thông báo nếu có FCM token
             if (!string.IsNullOrEmpty(receiver?.FcmToken))
             {
                 await _notificationService.SendMessageAsync(
                     receiver.FcmToken,
                     "New Message",
-                    response.MessageText
+                    $"{sender?.FullName ?? "Someone"}: {response.MessageText}",
+                    receiver.UserId
                 );
             }
 
+            // 5️⃣ Lưu message
             return await _chatRepository.SendMessageAsync(message);
         }
+
 
         public async Task<bool> DeleteChatRoomAsync(int id)
         {

@@ -10,7 +10,7 @@ namespace PetShop.API.DTOs
         public string Email { get; set; }
         public string? Phone { get; set; }
         public string? ImgUrl { get; set; }
-        public string Role { get; set; }
+        public int Role { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
 

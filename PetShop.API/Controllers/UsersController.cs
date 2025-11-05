@@ -71,7 +71,7 @@ namespace PetShop.API.Controllers
             }
         }
 
-        [HttpPatch("{id}")]
+        [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(int id)
         {

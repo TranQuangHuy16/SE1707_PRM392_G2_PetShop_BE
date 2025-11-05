@@ -4,25 +4,33 @@ namespace PetShop.Services.Services
 {
     public class NotificationService
     {
-        public async Task SendMessageAsync(string fcmToken, string title, string body)
+        public async Task SendMessageAsync(
+            string fcmToken,
+            string title,
+            string body,
+            int receiverId)
         {
             if (string.IsNullOrEmpty(fcmToken))
                 return;
 
-            var message = new Message()
+            var message = new Message
             {
                 Token = fcmToken,
-                Notification = new Notification()
+                Notification = new Notification
                 {
                     Title = title,
                     Body = body
+                },
+                Data = new Dictionary<string, string>
+                {
+                    { "receiverId", receiverId.ToString() }
                 }
             };
 
             try
             {
                 string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
-                Console.WriteLine($"✅ Notification sent: {response}");
+                Console.WriteLine($"✅ Notification sent successfully: {response}");
             }
             catch (Exception ex)
             {
