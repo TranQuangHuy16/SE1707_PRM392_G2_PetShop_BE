@@ -34,6 +34,15 @@ namespace PetShop.API.Controllers
             return Ok(room);
         }
 
+        [HttpGet("admin/{adminId}")]
+        public async Task<IActionResult> GetRoomByAdminId(int adminId)
+        {
+            var room = await _chatService.GetChatRoomByAdminIdAsync(adminId);
+            if (room == null) return NotFound();
+            return Ok(room);
+        }
+
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRoom(int id)
         {

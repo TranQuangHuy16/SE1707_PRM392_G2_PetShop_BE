@@ -410,3 +410,5 @@ appsettings.json
 appsettings.*.json
 
 .env
+
+firebase-adminsdk.json

@@ -97,6 +97,17 @@ namespace PetShop.Services.Services
 
             return res;
         }
+
+        public async Task<bool> UpdateFcmTokenAsync(int userId, string fcmToken)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            user.FcmToken = fcmToken;
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
     }
 }
 

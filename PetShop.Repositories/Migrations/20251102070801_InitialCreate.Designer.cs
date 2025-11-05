@@ -12,8 +12,8 @@ using PetShop.Repositories.DBContext;
 namespace PetShop.Repositories.Migrations
 {
     [DbContext(typeof(PetShopDbContext))]
-    [Migration("20251030161023_FixDecimalPrecision")]
-    partial class FixDecimalPrecision
+    [Migration("20251102070801_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -63,9 +63,6 @@ namespace PetShop.Repositories.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ProductId1")
-                        .HasColumnType("int");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -74,8 +71,6 @@ namespace PetShop.Repositories.Migrations
                     b.HasIndex("CartId");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("ProductId1");
 
                     b.ToTable("CartItems");
                 });
@@ -123,21 +118,11 @@ namespace PetShop.Repositories.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("UserId1")
-                        .HasColumnType("int");
-
                     b.HasKey("ChatRoomId");
 
                     b.HasIndex("AdminId");
 
                     b.HasIndex("CustomerId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("ChatRooms");
                 });
@@ -198,14 +183,9 @@ namespace PetShop.Repositories.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId1")
-                        .HasColumnType("int");
-
                     b.HasKey("NotificationId");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("Notifications");
                 });
@@ -259,9 +239,6 @@ namespace PetShop.Repositories.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ProductId1")
-                        .HasColumnType("int");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -273,8 +250,6 @@ namespace PetShop.Repositories.Migrations
                     b.HasIndex("OrderId");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("ProductId1");
 
                     b.ToTable("OrderDetails");
                 });
@@ -327,9 +302,6 @@ namespace PetShop.Repositories.Migrations
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
-                    b.Property<int>("OrderId1")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime2");
 
@@ -339,11 +311,12 @@ namespace PetShop.Repositories.Migrations
                     b.Property<int>("PaymentStatus")
                         .HasColumnType("int");
 
+                    b.Property<string>("TransactionId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("PaymentId");
 
                     b.HasIndex("OrderId");
-
-                    b.HasIndex("OrderId1");
 
                     b.ToTable("Payments");
                 });
@@ -357,9 +330,6 @@ namespace PetShop.Repositories.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductId"));
 
                     b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CategoryId1")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -385,8 +355,6 @@ namespace PetShop.Repositories.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("CategoryId1");
-
                     b.ToTable("Products");
                 });
 
@@ -404,6 +372,9 @@ namespace PetShop.Repositories.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("FcmToken")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
@@ -476,9 +447,6 @@ namespace PetShop.Repositories.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserId1")
-                        .HasColumnType("int");
-
                     b.Property<string>("Ward")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -486,8 +454,6 @@ namespace PetShop.Repositories.Migrations
                     b.HasKey("AddressId");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("UserAddresses");
                 });
@@ -512,14 +478,10 @@ namespace PetShop.Repositories.Migrations
                         .IsRequired();
 
                     b.HasOne("PetShop.Repositories.Models.Product", "Product")
-                        .WithMany()
+                        .WithMany("CartItems")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("PetShop.Repositories.Models.Product", null)
-                        .WithMany("CartItems")
-                        .HasForeignKey("ProductId1");
 
                     b.Navigation("Cart");
 
@@ -529,24 +491,16 @@ namespace PetShop.Repositories.Migrations
             modelBuilder.Entity("PetShop.Repositories.Models.ChatRoom", b =>
                 {
                     b.HasOne("PetShop.Repositories.Models.User", "Admin")
-                        .WithMany()
+                        .WithMany("AdminChatRooms")
                         .HasForeignKey("AdminId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("PetShop.Repositories.Models.User", "Customer")
-                        .WithMany()
+                        .WithMany("CustomerChatRooms")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("PetShop.Repositories.Models.User", null)
-                        .WithMany("AdminChatRooms")
-                        .HasForeignKey("UserId");
-
-                    b.HasOne("PetShop.Repositories.Models.User", null)
-                        .WithMany("CustomerChatRooms")
-                        .HasForeignKey("UserId1");
 
                     b.Navigation("Admin");
 
@@ -574,16 +528,10 @@ namespace PetShop.Repositories.Migrations
 
             modelBuilder.Entity("PetShop.Repositories.Models.Notification", b =>
                 {
-                    b.HasOne("PetShop.Repositories.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("PetShop.Repositories.Models.User", "User")
                         .WithMany("Notifications")
-                        .HasForeignKey("UserId1")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -615,14 +563,10 @@ namespace PetShop.Repositories.Migrations
                         .IsRequired();
 
                     b.HasOne("PetShop.Repositories.Models.Product", "Product")
-                        .WithMany()
+                        .WithMany("OrderDetails")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("PetShop.Repositories.Models.Product", null)
-                        .WithMany("OrderDetails")
-                        .HasForeignKey("ProductId1");
 
                     b.Navigation("Order");
 
@@ -642,16 +586,10 @@ namespace PetShop.Repositories.Migrations
 
             modelBuilder.Entity("PetShop.Repositories.Models.Payment", b =>
                 {
-                    b.HasOne("PetShop.Repositories.Models.Order", null)
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("PetShop.Repositories.Models.Order", "Order")
                         .WithMany("Payments")
-                        .HasForeignKey("OrderId1")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
@@ -659,16 +597,10 @@ namespace PetShop.Repositories.Migrations
 
             modelBuilder.Entity("PetShop.Repositories.Models.Product", b =>
                 {
-                    b.HasOne("PetShop.Repositories.Models.Category", null)
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("PetShop.Repositories.Models.Category", "Category")
                         .WithMany("Products")
-                        .HasForeignKey("CategoryId1")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -677,14 +609,10 @@ namespace PetShop.Repositories.Migrations
             modelBuilder.Entity("PetShop.Repositories.Models.UserAddress", b =>
                 {
                     b.HasOne("PetShop.Repositories.Models.User", "User")
-                        .WithMany()
+                        .WithMany("Addresses")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("PetShop.Repositories.Models.User", null)
-                        .WithMany("Addresses")
-                        .HasForeignKey("UserId1");
 
                     b.Navigation("User");
                 });
