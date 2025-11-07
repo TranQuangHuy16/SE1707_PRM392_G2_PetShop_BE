@@ -12,6 +12,8 @@ namespace PetShop.Repositories.Models
         public int Stock { get; set; }
         public string? ImageUrl { get; set; }
         public bool IsActive { get; set; } = true;
+        public string? Brand { get; set; }
+
 
         // Navigation
         public Category Category { get; set; }

@@ -16,7 +16,8 @@ namespace PetShop.Services.Mapper
         {
             CreateMap<Product, ProductResponse>()
                 .ForMember(dest => dest.CategoryName,
-                           opt => opt.MapFrom(src => src.Category.CategoryName));
+                           opt => opt.MapFrom(src => src.Category.CategoryName))
+                .ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Brand));
             CreateMap<ProductCreateRequest, Product>();
             CreateMap<ProductUpdateRequest, Product>();
 

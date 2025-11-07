@@ -124,5 +124,41 @@ namespace PetShop.API.Controllers
             var products = await _productService.GetProductsByCategoryIdNotActiveAsync(categoryId);
             return Ok(products);
         }
+        // 🔍 SEARCH: api/products/search
+        [HttpGet("search")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchProducts(
+            [FromQuery] string? keyword,
+            [FromQuery] string? category,
+            [FromQuery] string? brand,
+            [FromQuery] decimal? minPrice,
+            [FromQuery] decimal? maxPrice)
+        {
+            var products = await _productService.GetAllProductsAsync();
+            var filtered = products.AsQueryable();
+
+            if (!string.IsNullOrEmpty(keyword))
+                filtered = filtered.Where(p =>
+                    (p.ProductName != null && p.ProductName.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (p.Description != null && p.Description.Contains(keyword, StringComparison.OrdinalIgnoreCase)));
+
+            if (!string.IsNullOrEmpty(category))
+                filtered = filtered.Where(p =>
+                    p.CategoryName != null && p.CategoryName.Contains(category, StringComparison.OrdinalIgnoreCase));
+
+            if (!string.IsNullOrEmpty(brand))
+                filtered = filtered.Where(p =>
+                    p.Brand != null && p.Brand.Contains(brand, StringComparison.OrdinalIgnoreCase));
+
+            if (minPrice.HasValue)
+                filtered = filtered.Where(p => p.Price >= minPrice.Value);
+
+            if (maxPrice.HasValue)
+                filtered = filtered.Where(p => p.Price <= maxPrice.Value);
+
+            return Ok(filtered.ToList());
+        }
+
     }
+
 }

@@ -159,6 +159,9 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IZaloPayService, ZaloPayService>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<IProductRatingRepository, ProductRatingRepository>();
+builder.Services.AddScoped<IProductRatingService, ProductRatingService>();
+
 
 //mapper
 builder.Services.AddAutoMapper(typeof(ProductMapper));
