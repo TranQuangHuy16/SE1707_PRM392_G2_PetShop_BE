@@ -104,5 +104,29 @@ namespace PetShop.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPut("status")]
+        public async Task<IActionResult> UpdateOrderStatus([FromBody] UpdateOrderStatusRequest request)
+        {
+            if (request == null || request.OrderId <= 0 || string.IsNullOrEmpty(request.Status))
+            {
+                return BadRequest(new { message = "Invalid request data" });
+            }
+
+            try
+            {
+                var result = await _orderService.UpdateOrderStatusAsync(request.OrderId, request.Status);
+                if (!result)
+                {
+                    return NotFound(new { message = "Order not found" });
+                }
+
+                return Ok(new { message = "Order status updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

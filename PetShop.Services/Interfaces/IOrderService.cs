@@ -12,5 +12,7 @@ namespace PetShop.Services.Interfaces
         Task<IEnumerable<OrderResponse>> GetOrdersByUserIdAsync(int userId, string? status = null);
         Task<IEnumerable<OrderResponse>> GetAllOrdersAsync(string? status = null);
         Task<bool> CancelOrderAsync(int orderId, int userId);
+        Task<bool> UpdateOrderStatusAsync(int orderId, string status);
+
     }
 }

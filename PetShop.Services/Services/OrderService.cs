@@ -178,6 +178,21 @@ namespace PetShop.Services.Services
             return true;
         }
 
+        public async Task<bool> UpdateOrderStatusAsync(int orderId, string status)
+        {
+            var order = await _orderRepo.GetOrderByIdAsync(orderId);
+            if (order == null)
+                throw new Exception("Order not found");
+
+            if (!Enum.TryParse<OrderStatusEnum>(status, true, out var statusEnum))
+                throw new Exception("Invalid status value");
+
+            order.Status = statusEnum;
+            await _orderRepo.UpdateOrderAsync(order);
+            return true;
+        }
+
+
         private OrderResponse MapToOrderResponse(Order order)
         {
             return new OrderResponse
