@@ -17,5 +17,7 @@ namespace PetShop.Services.DTOs.Responses
         public int Stock { get; set; }
         public string? ImageUrl { get; set; }
         public bool IsActive { get; set; }
+        public string? Brand { get; set; }
+
     }
 }
