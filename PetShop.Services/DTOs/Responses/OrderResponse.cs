@@ -8,6 +8,8 @@ namespace PetShop.Services.DTOs.Responses
     {
         public int OrderId { get; set; }
         public int UserId { get; set; }
+        public string? UserName { get; set; }
+        public string? UserEmail { get; set; }
         public int? AddressId { get; set; }
         public DateTime OrderDate { get; set; }
         public decimal TotalAmount { get; set; }

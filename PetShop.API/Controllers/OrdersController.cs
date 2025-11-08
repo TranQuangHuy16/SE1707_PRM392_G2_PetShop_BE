@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetShop.Services.DTOs.Requests;
 using PetShop.Services.Interfaces;
@@ -12,10 +12,12 @@ namespace PetShop.API.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IOrderService _orderService;
+        private readonly IEmailService _emailService;
 
-        public OrdersController(IOrderService orderService)
+        public OrdersController(IOrderService orderService, IEmailService emailService)
         {
             _orderService = orderService;
+            _emailService = emailService;
         }
 
         [HttpPost("create-from-cart")]
@@ -117,8 +119,18 @@ namespace PetShop.API.Controllers
             {
                 var result = await _orderService.UpdateOrderStatusAsync(request.OrderId, request.Status);
                 if (!result)
-                {
                     return NotFound(new { message = "Order not found" });
+
+                var order = await _orderService.GetOrderByIdAsync(request.OrderId);
+
+                if (order != null)
+                {
+                    var subject = $"Cập nhật đơn hàng #{order.OrderId}";
+                    var body = $"Xin chào {order.UserName},\n\n" +
+                               $"Đơn hàng của bạn hiện đã được cập nhật sang trạng thái: {order.Status}.\n\n" +
+                               $"Cảm ơn bạn đã mua sắm tại PetShop! 🐾";
+
+                    await _emailService.SendOtpAsync(order.UserEmail, subject, body);
                 }
 
                 return Ok(new { message = "Order status updated successfully" });
@@ -128,5 +140,6 @@ namespace PetShop.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
     }
 }
