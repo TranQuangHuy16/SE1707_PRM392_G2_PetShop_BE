@@ -116,6 +116,17 @@ namespace PetShop.Services.Services
             return MapToOrderResponse(order);
         }
 
+        public async Task<OrderResponse?> GetOrderByIdAsync(int orderId)
+        {
+            var order = await _orderRepo.GetOrderByIdAsync(orderId);
+            if (order == null)
+            {
+                return null;
+            }
+
+            return MapToOrderResponse(order);
+        }
+
         public async Task<IEnumerable<OrderResponse>> GetOrdersByUserIdAsync(int userId, string? status = null)
         {
             var orders = await _orderRepo.GetOrdersByUserIdAsync(userId);
@@ -199,6 +210,8 @@ namespace PetShop.Services.Services
             {
                 OrderId = order.OrderId,
                 UserId = order.UserId,
+                UserName = order.User?.FullName,
+                UserEmail = order.User?.Email,
                 AddressId = order.AddressId,
                 OrderDate = order.OrderDate,
                 TotalAmount = order.TotalAmount,
