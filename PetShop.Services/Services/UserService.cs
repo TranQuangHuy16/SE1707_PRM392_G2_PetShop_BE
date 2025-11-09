@@ -108,6 +108,22 @@ namespace PetShop.Services.Services
             await _userRepository.UpdateAsync(user);
             return true;
         }
+
+        public async Task<UserDetailResponseDto> UpdateUserDetailsAsync(int id, UpdateUserDetailsRequest request)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+                return null;
+
+            user.Username = request.Username;
+            user.FullName = request.FullName;
+            user.Email = request.Email;
+            user.Phone = request.Phone;
+            user.ImgUrl = request.ImgUrl;
+
+            await _userRepository.UpdateAsync(user);
+            return _mapper.Map<UserDetailResponseDto>(user);
+        }
     }
 }
 

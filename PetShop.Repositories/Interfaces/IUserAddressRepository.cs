@@ -11,6 +11,7 @@ namespace PetShop.Repositories.Interfaces
     {
         Task<int> CreateAsync(UserAddress userAddress);
         Task<int> UpdateAsync(UserAddress userAddress);
+        Task<bool> RemoveAsync(UserAddress userAddress);
         Task<UserAddress> GetDefaultByUserId(int userId);
         Task<UserAddress> GetByIdAsync(int id);
         Task<IEnumerable<UserAddress>> GetByUserIdAsync(int userId);

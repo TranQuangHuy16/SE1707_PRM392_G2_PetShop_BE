@@ -135,11 +135,9 @@ namespace PetShop.API.Controllers
 
                 var firstRoute = route.routes.First();
 
-                // Code cũ: (Chỉ trả về coords)
                 // var coords = route.routes.First().geometry.coordinates;
                 // return Ok(new { coordinates = coords });
 
-                // Code mới: (Trả về cả 3)
                 return Ok(new
                 {
                     coordinates = firstRoute.geometry.coordinates,
@@ -150,6 +148,27 @@ namespace PetShop.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Lỗi lấy route", detail = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Xóa một địa chỉ của người dùng theo ID.
+        /// </summary>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> RemoveAsync(int id)
+        {
+            try
+            {
+                var result = await _userAddressService.RemoveAsync(id);
+                return Ok(result);
+            }
+            catch (Exception ex) when (ex.Message.Contains("Address not found"))
+            {
+                return NotFound(new { message = "Không tìm thấy địa chỉ để xóa." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Error", error = ex.Message });
             }
         }
     }
