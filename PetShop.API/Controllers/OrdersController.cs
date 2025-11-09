@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetShop.Services.DTOs.Requests;
 using PetShop.Services.Interfaces;
+using PetShop.Services.Services;
 using System.Security.Claims;
 
 namespace PetShop.API.Controllers
@@ -12,16 +13,17 @@ namespace PetShop.API.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IOrderService _orderService;
-
-        public OrdersController(IOrderService orderService)
+        private readonly IEmailService _emailService;
+        public OrdersController(IOrderService orderService, IEmailService emailService)
         {
             _orderService = orderService;
+            _emailService = emailService;
         }
 
         [HttpPost("create-from-cart")]
         public async Task<IActionResult> CreateOrderFromCart([FromBody] CreateOrderRequest request)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                            ?? User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
@@ -42,7 +44,7 @@ namespace PetShop.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMyOrders([FromQuery] string? status)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                            ?? User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
@@ -63,7 +65,7 @@ namespace PetShop.API.Controllers
         [HttpGet("{orderId}")]
         public async Task<IActionResult> GetOrderById(int orderId)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                            ?? User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
@@ -82,7 +84,7 @@ namespace PetShop.API.Controllers
         [HttpPut("{orderId}/cancel")]
         public async Task<IActionResult> CancelOrder(int orderId)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                            ?? User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
@@ -104,5 +106,40 @@ namespace PetShop.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPut("status")]
+        public async Task<IActionResult> UpdateOrderStatus([FromBody] UpdateOrderStatusRequest request)
+        {
+            if (request == null || request.OrderId <= 0 || string.IsNullOrEmpty(request.Status))
+            {
+                return BadRequest(new { message = "Invalid request data" });
+            }
+
+            try
+            {
+                var result = await _orderService.UpdateOrderStatusAsync(request.OrderId, request.Status);
+                if (!result)
+                    return NotFound(new { message = "Order not found" });
+
+                var order = await _orderService.GetOrderByIdAsync(request.OrderId);
+
+                if (order != null)
+                {
+                    var subject = $"Cập nhật đơn hàng #{order.OrderId}";
+                    var body = $"Xin chào {order.UserName},\n\n" +
+                               $"Đơn hàng của bạn hiện đã được cập nhật sang trạng thái: {order.Status}.\n\n" +
+                               $"Cảm ơn bạn đã mua sắm tại PetShop! 🐾";
+
+                    await _emailService.SendOtpAsync(order.UserEmail, subject, body);
+                }
+
+                return Ok(new { message = "Order status updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
     }
 }

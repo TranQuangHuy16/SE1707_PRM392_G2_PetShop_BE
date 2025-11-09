@@ -1,4 +1,5 @@
-﻿using PetShop.Services.DTOs.Responses;
+﻿using PetShop.Services.DTOs.Requests;
+using PetShop.Services.DTOs.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace PetShop.Services.Interfaces
     public interface IMapboxService
     {
         Task<CoordinatesAddressResponse> GetCoordinatesFromAddress(string address);
+        Task<MapboxRouteResponse> GetRoute(RouteRequest req);
     }
 }

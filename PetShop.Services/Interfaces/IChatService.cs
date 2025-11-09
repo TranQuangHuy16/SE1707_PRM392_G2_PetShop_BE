@@ -13,6 +13,7 @@ namespace PetShop.Services.Interfaces
     {
         Task<ChatRoom> CreateChatRoomAsync(CreateChatRoomRequest dto);
         Task<ChatRoom?> GetChatRoomByIdAsync(int id);
+        Task<IEnumerable<ChatRoom>> GetChatRoomByAdminIdAsync(int adminId);
         Task<List<Message>> GetMessagesAsync(int chatRoomId);
         Task<int> SendMessageAsync(ReceiveMessageResponse response);
         Task<bool> DeleteChatRoomAsync(int id);

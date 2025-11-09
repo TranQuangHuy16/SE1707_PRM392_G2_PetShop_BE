@@ -8,6 +8,9 @@ using PetShop.Repositories.Repositories;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using PetShop.Services.Mapper;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -150,6 +153,9 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IZaloPayService, ZaloPayService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<IProductRatingRepository, ProductRatingRepository>();
+builder.Services.AddScoped<IProductRatingService, ProductRatingService>();
 
 
 //mapper
@@ -157,6 +163,19 @@ builder.Services.AddAutoMapper(typeof(ProductMapper));
 builder.Services.AddAutoMapper(typeof(CartMapper));
 builder.Services.AddAutoMapper(typeof(PaymentMapper));
 
+// 🔹 Khởi tạo Firebase
+var firebasePath = Path.Combine(Directory.GetCurrentDirectory(), "firebase-adminsdk.json");
+if (File.Exists(firebasePath))
+{
+    FirebaseApp.Create(new AppOptions()
+    {
+        Credential = GoogleCredential.FromFile(firebasePath)
+    });
+}
+else
+{
+    Console.WriteLine("⚠️ Firebase credential file not found!");
+}
 
 var app = builder.Build();
 

@@ -10,7 +10,9 @@
     {
         Pending = 0,
         Paid = 1,
-        Cancelled = 2
+        Cancelled = 2,
+        Shipping = 3,
+        Delivered = 4
     }
 
     public enum PaymentMethodEnum

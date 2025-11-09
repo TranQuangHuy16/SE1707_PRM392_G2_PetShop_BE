@@ -1,4 +1,4 @@
-using PetShop.Repositories.Interfaces;
+﻿using PetShop.Repositories.Interfaces;
 using PetShop.Repositories.Models;
 using PetShop.Repositories.Models.Enums;
 using PetShop.Services.DTOs.Requests;
@@ -17,17 +17,23 @@ namespace PetShop.Services.Services
         private readonly ICartRepository _cartRepo;
         private readonly IProductRepository _productRepo;
         private readonly IUserAddressRepository _addressRepo;
+        private readonly IUserRepository _userRepo;
+        private readonly NotificationService _notificationService;
 
         public OrderService(
-            IOrderRepository orderRepo, 
-            ICartRepository cartRepo, 
+            IOrderRepository orderRepo,
+            ICartRepository cartRepo,
             IProductRepository productRepo,
-            IUserAddressRepository addressRepo)
+            IUserAddressRepository addressRepo,
+            NotificationService notificationService,
+            IUserRepository userRepository)
         {
             _orderRepo = orderRepo;
             _cartRepo = cartRepo;
             _productRepo = productRepo;
             _addressRepo = addressRepo;
+            _notificationService = notificationService;
+            _userRepo = userRepository;
         }
 
         public async Task<OrderResponse> CreateOrderFromCartAsync(int userId, CreateOrderRequest request)
@@ -84,7 +90,7 @@ namespace PetShop.Services.Services
             foreach (var cartItem in cart.CartItems)
             {
                 var product = await _productRepo.GetProductByIdAsync(cartItem.ProductId);
-                
+
                 var orderDetail = new OrderDetail
                 {
                     OrderId = order.OrderId,
@@ -101,7 +107,20 @@ namespace PetShop.Services.Services
 
             await _cartRepo.ClearCartAsync(cart.CartId);
 
-            return await GetOrderByIdAsync(order.OrderId, userId) 
+
+            if (await GetOrderByIdAsync(order.OrderId, userId) != null)
+            {
+                var users = await _userRepo.GetAllUsersAsync();
+                var userAdmin = users.FirstOrDefault(u => u.Role == UserRoleEnum.Admin);
+                var user = users.FirstOrDefault(u => u.UserId == userId);
+                _notificationService.SendMessageForAdminAsync(
+                    userAdmin!.FcmToken!,
+                    "Đơn hàng mới từ khách hàng",
+                    $"Khách hàng {user.FullName} vừa tạo đơn hàng #{order.OrderId}."
+                ).Wait();
+            }
+
+            return await GetOrderByIdAsync(order.OrderId, userId)
                 ?? throw new Exception("Order created but could not be retrieved");
         }
 
@@ -116,10 +135,21 @@ namespace PetShop.Services.Services
             return MapToOrderResponse(order);
         }
 
+        public async Task<OrderResponse?> GetOrderByIdAsync(int orderId)
+        {
+            var order = await _orderRepo.GetOrderByIdAsync(orderId);
+            if (order == null)
+            {
+                return null;
+            }
+
+            return MapToOrderResponse(order);
+        }
+
         public async Task<IEnumerable<OrderResponse>> GetOrdersByUserIdAsync(int userId, string? status = null)
         {
             var orders = await _orderRepo.GetOrdersByUserIdAsync(userId);
-            
+
             // Filter by status if provided
             if (!string.IsNullOrEmpty(status))
             {
@@ -128,14 +158,14 @@ namespace PetShop.Services.Services
                     orders = orders.Where(o => o.Status == statusEnum);
                 }
             }
-            
+
             return orders.Select(MapToOrderResponse).ToList();
         }
 
         public async Task<IEnumerable<OrderResponse>> GetAllOrdersAsync(string? status = null)
         {
             var orders = await _orderRepo.GetAllOrdersAsync();
-            
+
             // Filter by status if provided
             if (!string.IsNullOrEmpty(status))
             {
@@ -144,7 +174,7 @@ namespace PetShop.Services.Services
                     orders = orders.Where(o => o.Status == statusEnum);
                 }
             }
-            
+
             return orders.Select(MapToOrderResponse).ToList();
         }
 
@@ -178,12 +208,29 @@ namespace PetShop.Services.Services
             return true;
         }
 
+        public async Task<bool> UpdateOrderStatusAsync(int orderId, string status)
+        {
+            var order = await _orderRepo.GetOrderByIdAsync(orderId);
+            if (order == null)
+                throw new Exception("Order not found");
+
+            if (!Enum.TryParse<OrderStatusEnum>(status, true, out var statusEnum))
+                throw new Exception("Invalid status value");
+
+            order.Status = statusEnum;
+            await _orderRepo.UpdateOrderAsync(order);
+            return true;
+        }
+
+
         private OrderResponse MapToOrderResponse(Order order)
         {
             return new OrderResponse
             {
                 OrderId = order.OrderId,
                 UserId = order.UserId,
+                UserName = order.User?.FullName,
+                UserEmail = order.User?.Email,
                 AddressId = order.AddressId,
                 OrderDate = order.OrderDate,
                 TotalAmount = order.TotalAmount,

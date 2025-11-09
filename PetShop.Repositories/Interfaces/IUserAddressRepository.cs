@@ -14,5 +14,6 @@ namespace PetShop.Repositories.Interfaces
         Task<UserAddress> GetDefaultByUserId(int userId);
         Task<UserAddress> GetByIdAsync(int id);
         Task<IEnumerable<UserAddress>> GetByUserIdAsync(int userId);
+        Task<UserAddress> GetAdmin();
     }
 }

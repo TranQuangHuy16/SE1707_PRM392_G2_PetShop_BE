@@ -3,6 +3,7 @@ using PetShop.Repositories.Basic;
 using PetShop.Repositories.DBContext;
 using PetShop.Repositories.Interfaces;
 using PetShop.Repositories.Models;
+using PetShop.Repositories.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,11 @@ namespace PetShop.Repositories.Repositories
     {
         public UserAddressRepository() { }
         public UserAddressRepository(PetShopDbContext context) => _context = context;
+
+        public async Task<UserAddress> GetAdmin()
+        {
+            return await _context.UserAddresses.FirstOrDefaultAsync(u => u.IsDefault == true && u.User.Role.Equals(UserRoleEnum.Admin));
+        }
 
         public async Task<IEnumerable<UserAddress>> GetByUserIdAsync(int userId)
         {
