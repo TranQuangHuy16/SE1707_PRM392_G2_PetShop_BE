@@ -164,18 +164,71 @@ builder.Services.AddAutoMapper(typeof(CartMapper));
 builder.Services.AddAutoMapper(typeof(PaymentMapper));
 
 // 🔹 Khởi tạo Firebase
+//var firebasePath = Path.Combine(Directory.GetCurrentDirectory(), "firebase-adminsdk.json");
+//if (File.Exists(firebasePath))
+//{
+//    FirebaseApp.Create(new AppOptions()
+//    {
+//        Credential = GoogleCredential.FromFile(firebasePath)
+//    });
+//}
+//else
+//{
+//    Console.WriteLine("⚠️ Firebase credential file not found!");
+//}
+
+// 🔹 Khởi tạo Firebase (JSON local hoặc environment variables)
 var firebasePath = Path.Combine(Directory.GetCurrentDirectory(), "firebase-adminsdk.json");
+
 if (File.Exists(firebasePath))
 {
+    // Dùng file JSON nếu có
     FirebaseApp.Create(new AppOptions()
     {
         Credential = GoogleCredential.FromFile(firebasePath)
     });
+    Console.WriteLine("✅ Firebase initialized via JSON file");
 }
 else
 {
-    Console.WriteLine("⚠️ Firebase credential file not found!");
+    // Fallback: dùng environment variables
+    var privateKey = Environment.GetEnvironmentVariable("FIREBASE_PRIVATE_KEY")?.Replace("\\n", "\n");
+    var projectId = Environment.GetEnvironmentVariable("FIREBASE_PROJECT_ID");
+    var privateKeyId = Environment.GetEnvironmentVariable("FIREBASE_PRIVATE_KEY_ID");
+    var clientEmail = Environment.GetEnvironmentVariable("FIREBASE_CLIENT_EMAIL");
+    var clientId = Environment.GetEnvironmentVariable("FIREBASE_CLIENT_ID");
+    var clientX509CertUrl = Environment.GetEnvironmentVariable("FIREBASE_CLIENT_X509_CERT_URL");
+
+    if (string.IsNullOrEmpty(privateKey) || string.IsNullOrEmpty(projectId))
+    {
+        Console.WriteLine("⚠️ Firebase credentials not found in environment variables!");
+    }
+    else
+    {
+        string json = $@"
+        {{
+            ""type"": ""service_account"",
+            ""project_id"": ""{projectId}"",
+            ""private_key_id"": ""{privateKeyId}"",
+            ""private_key"": ""{privateKey}"",
+            ""client_email"": ""{clientEmail}"",
+            ""client_id"": ""{clientId}"",
+            ""auth_uri"": ""https://accounts.google.com/o/oauth2/auth"",
+            ""token_uri"": ""https://oauth2.googleapis.com/token"",
+            ""auth_provider_x509_cert_url"": ""https://www.googleapis.com/oauth2/v1/certs"",
+            ""client_x509_cert_url"": ""{clientX509CertUrl}"",
+            ""universe_domain"": ""googleapis.com""
+        }}";
+
+        FirebaseApp.Create(new AppOptions()
+        {
+            Credential = GoogleCredential.FromJson(json)
+        });
+
+        Console.WriteLine("✅ Firebase initialized via environment variables");
+    }
 }
+
 
 var app = builder.Build();
 
