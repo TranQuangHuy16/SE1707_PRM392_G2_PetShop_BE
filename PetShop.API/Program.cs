@@ -178,6 +178,7 @@ builder.Services.AddAutoMapper(typeof(PaymentMapper));
 //}
 
 // 🔹 Khởi tạo Firebase (JSON local hoặc environment variables)
+// 🔹 Khởi tạo Firebase (JSON local hoặc environment variables)
 var firebasePath = Path.Combine(Directory.GetCurrentDirectory(), "firebase-adminsdk.json");
 
 if (File.Exists(firebasePath))
@@ -199,26 +200,27 @@ else
     var clientId = Environment.GetEnvironmentVariable("FIREBASE_CLIENT_ID");
     var clientX509CertUrl = Environment.GetEnvironmentVariable("FIREBASE_CLIENT_X509_CERT_URL");
 
-    if (string.IsNullOrEmpty(privateKey) || string.IsNullOrEmpty(projectId))
+    if (string.IsNullOrEmpty(privateKey) || string.IsNullOrEmpty(projectId) ||
+        string.IsNullOrEmpty(privateKeyId) || string.IsNullOrEmpty(clientEmail) ||
+        string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientX509CertUrl))
     {
         Console.WriteLine("⚠️ Firebase credentials not found in environment variables!");
     }
     else
     {
-        string json = $@"
-        {{
-            ""type"": ""service_account"",
-            ""project_id"": ""{projectId}"",
-            ""private_key_id"": ""{privateKeyId}"",
-            ""private_key"": ""{privateKey}"",
-            ""client_email"": ""{clientEmail}"",
-            ""client_id"": ""{clientId}"",
-            ""auth_uri"": ""https://accounts.google.com/o/oauth2/auth"",
-            ""token_uri"": ""https://oauth2.googleapis.com/token"",
-            ""auth_provider_x509_cert_url"": ""https://www.googleapis.com/oauth2/v1/certs"",
-            ""client_x509_cert_url"": ""{clientX509CertUrl}"",
-            ""universe_domain"": ""googleapis.com""
-        }}";
+        string json = $@"{{
+  ""type"": ""service_account"",
+  ""project_id"": ""{projectId}"",
+  ""private_key_id"": ""{privateKeyId}"",
+  ""private_key"": ""{privateKey}"",
+  ""client_email"": ""{clientEmail}"",
+  ""client_id"": ""{clientId}"",
+  ""auth_uri"": ""https://accounts.google.com/o/oauth2/auth"",
+  ""token_uri"": ""https://oauth2.googleapis.com/token"",
+  ""auth_provider_x509_cert_url"": ""https://www.googleapis.com/oauth2/v1/certs"",
+  ""client_x509_cert_url"": ""{clientX509CertUrl}"",
+  ""universe_domain"": ""googleapis.com""
+}}";
 
         FirebaseApp.Create(new AppOptions()
         {
