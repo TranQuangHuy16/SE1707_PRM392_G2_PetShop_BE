@@ -43,6 +43,7 @@ namespace PetShop.Services.Services
                 Ratings = ratings.Select(r => new
                 {
                     r.Id,
+                    r.UserId,
                     r.Stars,
                     r.Comment,
                     UserName = r.User.FullName,

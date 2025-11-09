@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PetShop.Services.DTOs.Requests;
 using PetShop.Services.Interfaces;
+using PetShop.Services.Services;
 using System.Security.Claims;
 
 namespace PetShop.API.Controllers
@@ -13,7 +14,6 @@ namespace PetShop.API.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly IEmailService _emailService;
-
         public OrdersController(IOrderService orderService, IEmailService emailService)
         {
             _orderService = orderService;
@@ -23,7 +23,7 @@ namespace PetShop.API.Controllers
         [HttpPost("create-from-cart")]
         public async Task<IActionResult> CreateOrderFromCart([FromBody] CreateOrderRequest request)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                            ?? User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
@@ -44,7 +44,7 @@ namespace PetShop.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMyOrders([FromQuery] string? status)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                            ?? User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
@@ -65,7 +65,7 @@ namespace PetShop.API.Controllers
         [HttpGet("{orderId}")]
         public async Task<IActionResult> GetOrderById(int orderId)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                            ?? User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
@@ -84,7 +84,7 @@ namespace PetShop.API.Controllers
         [HttpPut("{orderId}/cancel")]
         public async Task<IActionResult> CancelOrder(int orderId)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                            ?? User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
