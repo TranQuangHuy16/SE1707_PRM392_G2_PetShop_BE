@@ -111,6 +111,16 @@ namespace PetShop.Services.Services
             var addr = await _userAddressRepository.GetAdmin();
             return MapToResponse(addr);
         }
+
+        public async Task<UserAddressResponse> RemoveAsync(int id)
+        {
+            var existing = await _userAddressRepository.GetByIdAsync(id);
+            if (existing == null)
+                throw new Exception("Address not found.");
+
+            await _userAddressRepository.RemoveAsync(existing);
+            return MapToResponse(existing);
+        }
     }
 
 }

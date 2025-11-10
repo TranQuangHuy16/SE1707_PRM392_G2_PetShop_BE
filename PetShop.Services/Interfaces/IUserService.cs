@@ -16,6 +16,7 @@ namespace PetShop.Services.Interfaces
         Task<IEnumerable<UserDetailResponseDto>> GetAll();
         Task<UserDetailResponseDto> GetDetailAsync(int id);
         Task<UserDetailResponseDto> UpdateUserAsync(int id, UpdateUserRequest request);
+        Task<UserDetailResponseDto> UpdateUserDetailsAsync(int id, UpdateUserDetailsRequest request);
         Task<int> DeleteUserAsync(int id);
         Task<bool> UpdateFcmTokenAsync(int userId, string fcmToken);
     }

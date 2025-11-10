@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetShop.API.DTOs;
+using PetShop.Services;
 using PetShop.Services.DTOs.Requests;
 using PetShop.Services.Interfaces;
 using System.Security.Claims;
@@ -48,7 +49,7 @@ namespace PetShop.API.Controllers
         }
 
         [HttpGet("detail/{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Customer")]
         public async Task<IActionResult> GetUserDetailAsync(int id)
         {
             var user = await _userService.GetDetailAsync(id);
@@ -97,6 +98,26 @@ namespace PetShop.API.Controllers
             if (!success) return NotFound(new { message = "User not found" });
 
             return Ok(new { success = true });
+        }
+
+        [HttpPut("detail/{id}")]
+        public async Task<IActionResult> UpdateUserDetails(int id, [FromBody] UpdateUserDetailsRequest request)
+        {
+            try
+            {
+                var updatedUser = await _userService.UpdateUserDetailsAsync(id, request);
+
+                if (updatedUser == null)
+                {
+                    return NotFound(new { message = "User not found." });
+                }
+
+                return Ok(updatedUser);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
     }
