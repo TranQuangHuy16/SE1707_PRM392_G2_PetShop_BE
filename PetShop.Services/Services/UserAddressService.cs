@@ -27,14 +27,11 @@ namespace PetShop.Services.Services
         // Create UserAddress
         public async Task<UserAddressResponse> CreateAsync(UserAddressRequest request)
         {
-            if (request.IsDefault)
+            if (request.IsDefault == true)
             {
-                var existingAddresses = await _userAddressRepository.GetByUserIdAsync(request.UserId);
-                foreach (var addr in existingAddresses.Where(a => a.IsDefault))
-                {
-                    addr.IsDefault = false;
-                    await _userAddressRepository.UpdateAsync(addr);
-                }
+                var addressDefault = await _userAddressRepository.GetDefaultByUserId(request.UserId);
+                addressDefault.IsDefault = false;
+                await _userAddressRepository.UpdateAsync(addressDefault);
             }
 
             var newAddress = new UserAddress
@@ -74,6 +71,16 @@ namespace PetShop.Services.Services
             var existing = await _userAddressRepository.GetByIdAsync(id);
             if (existing == null)
                 throw new Exception("Address not found.");
+
+            if(request.IsDefault == true)
+            {
+                var addressDefault = await _userAddressRepository.GetDefaultByUserId(existing.UserId);
+                if (addressDefault != null && addressDefault.AddressId != existing.AddressId)
+                {
+                    addressDefault.IsDefault = false;
+                    await _userAddressRepository.UpdateAsync(addressDefault);
+                }
+            }
 
             existing.AddressLine = request.AddressLine;
             existing.City = request.City;
